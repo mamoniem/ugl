@@ -29,11 +29,15 @@
 UENUM()
 enum class ESupportedPlatforms : uint8
 {
-	WindowsNoEditor		= 0,	//maybe name it Win64
+	Windows				= 0,	//maybe name it Win64
 	Mac					= 1,
 	Linux				= 2,
 	PS4					= 3,
-	XboxOne				= 4,
+	XB1					= 4,
+	WinGDK				= 5,
+	XboxOneGDK			= 6,
+	XSX					= 7,
+	Switch				= 8
 };
 
 USTRUCT()
@@ -50,7 +54,7 @@ public:
 
 	FUnrealGameLinkTargetPlatform()
 	{
-		Platfrom = ESupportedPlatforms::WindowsNoEditor;
+		Platfrom = ESupportedPlatforms::Windows;
 		StreamingBuildRootDirectory.Path = "../";
 	}
 };
