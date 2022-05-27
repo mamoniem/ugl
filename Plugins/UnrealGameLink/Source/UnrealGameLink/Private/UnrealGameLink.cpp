@@ -689,7 +689,7 @@ void FUnrealGameLinkModule::GetPackagesCookingDirectory(UPackage* Package, const
 
 	//Get full path
 	bool FoundPackage = false;
-	FoundPackage = FPackageName::DoesPackageExist(Package->GetName(), NULL, &PackageFullFileNamePath, false);
+	FoundPackage = FPackageName::DoesPackageExist(Package->GetName(), &PackageFullFileNamePath, false);
 
 	//remove the /../../../PROJECT_NAME/Content and leave only the asset name and path inside the content folder
 	int32 strFoundAt = PackageFullFileNamePath.Find("/Content", ESearchCase::IgnoreCase, ESearchDir::FromStart);
