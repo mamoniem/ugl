@@ -37,6 +37,17 @@
 #include "ISourceControlModule.h"
 #include "SourceControl/Public/SourceControlHelpers.h"
 
+/* for the FSavePackageArgs*/
+#include "UObject/SavePackage.h"
+#include "PackageHelperFunctions.h"
+#include "CookOnTheSide/CookOnTheFlyServer.h"
+
+/*
+#include "UnrealEd/Private/Cooker/LooseCookedPackageWriter.h"
+#include "UnrealEd/Private/Cooker/CookTypes.h"
+#include "UnrealEd/Private/Cooker/CookedSavePackageValidator.h"
+*/
+
 static const FName UnrealGameLinkTabName("UnrealGameLink");
 
 #define LOCTEXT_NAMESPACE "FUnrealGameLinkModule"
@@ -447,6 +458,9 @@ bool FUnrealGameLinkModule::GetAllTargetPackagingPlatforms(TArray<ITargetPlatfor
 
 		for (ITargetPlatform* EngineTarget : EngineTargetPlatforms)
 		{
+			if (bDebugEditorPackagesOperations)
+				UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::GetAllTargetPackagingPlatforms, ITargetPlatformManagerModule supports platform [%s]"), *EngineTarget->PlatformName());
+
 			if (UserSettingsTargetPackaingPlaftormNames.Contains(EngineTarget->PlatformName()))
 				OutPackagingPlatforms.AddUnique(EngineTarget);
 		}
@@ -553,6 +567,61 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	}
 
 	GIsCookerLoadingPackage = true;
+
+	/*
+	//bSuccess = UE::EditorDomain::TrySavePackage(Package);
+
+	TUniquePtr<ICookedPackageWriter> PackageWriter = MakeUnique<ICookedPackageWriter>(CookedFileNamePath);
+	//IPackageWriter* PackageWriter;
+	IPackageWriter::FBeginPackageInfo BeginInfo;
+	BeginInfo.PackageName = Package->GetFName();
+	PackageWriter->BeginPackage(BeginInfo);
+	FSavePackageContext SavePackageContext(TargetPlatform, PackageWriter.Get());
+	*/
+
+	/*
+	FSavePackageArgs SaveArgs;
+	//SaveArgs.SavePackageContext = &SavePackageContext;
+	SaveArgs.TopLevelFlags = TopLevelFlags;
+	SaveArgs.Error = GError;
+	SaveArgs.bForceByteSwapping = false;
+	SaveArgs.bWarnOfLongFilename = false;
+	SaveArgs.SaveFlags = SaveFlags;
+	SaveArgs.TargetPlatform = TargetPlatform;
+	SaveArgs.FinalTimeStamp = FDateTime::MinValue();
+	SaveArgs.bSlowTask = false;
+	SaveArgs.SavePackageContext = nullptr;
+	FSavePackageResultStruct SaveResult = GEditor->Save
+	(
+		Package,
+		nullptr,
+		*CookedFileNamePath,
+		SaveArgs
+	);
+	*/
+
+	//possible method
+	/*
+	LoadPackage(Package, *CookedFileNamePath, LOAD_None);
+	*/
+
+	//this seems good method, but flags is enum!!
+	/*
+	bSuccess = SavePackageHelper(Package, CookedFileNamePath, TopLevelFlags, GError, SAVE_Concurrent);
+	*/
+
+	//this method use the body of the SavePackageHelper() function
+	FSavePackageArgs SaveArgs;
+	SaveArgs.TopLevelFlags = TopLevelFlags;
+	SaveArgs.Error = GError;
+	SaveArgs.SaveFlags = SaveFlags; //SAVE_Concurrent | SAVE_Async | SAVE_Unversioned | SAVE_ComputeHash | SAVE_KeepGUID;
+	SaveArgs.TargetPlatform = TargetPlatform;
+	bSuccess =  GEditor->SavePackage(Package, nullptr, *CookedFileNamePath, SaveArgs);
+
+
+
+	//UE4.x, this will be deprecated sometime in UE5.x, in UE5.0 it warns about future deprecation
+	/*
 	FSavePackageResultStruct SaveResult = GEditor->Save
 	(
 		Package,
@@ -570,9 +639,11 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 		nullptr,
 		nullptr
 	);
+	*/
+
 	GIsCookerLoadingPackage = false;
 
-	bSuccess = SaveResult == ESavePackageResult::Success ? true : false;
+	//bSuccess = SaveResult == ESavePackageResult::Success ? true : false;
 
 	//Notify if user set the option
 	if (bNotifyCookingResults)
@@ -669,6 +740,47 @@ bool FUnrealGameLinkModule::CopyModifiedPackages()
 
 	return true;
 }
+
+/*
+* Pretty close to UCookOnTheFlyServer::CreateSaveContext(const ITargetPlatform* TargetPlatform) in the CookOnTheFlyServer.h/cpp
+*/
+/*
+UE::Cook::FCookSavePackageContext* FUnrealGameLinkModule::CreateSaveContext(const ITargetPlatform* TargetPlatform)
+{
+	using namespace UE::Cook;
+
+	const FString RootPathSandbox = ConvertToFullSandboxPath(FPaths::RootDir(), true);
+	FString MetadataPathSandbox;
+	MetadataPathSandbox = ConvertToFullSandboxPath(FPaths::ProjectDir() / "Metadata", true);
+
+	const FString PlatformString = TargetPlatform->PlatformName();
+	const FString ResolvedRootPath = RootPathSandbox.Replace(TEXT("[Platform]"), *PlatformString);
+	const FString ResolvedMetadataPath = MetadataPathSandbox.Replace(TEXT("[Platform]"), *PlatformString);
+
+	ICookedPackageWriter* PackageWriter = nullptr;
+	FString WriterDebugName;
+
+	PackageWriter = new FLooseCookedPackageWriter(ResolvedRootPath, ResolvedMetadataPath, TargetPlatform,
+	GetAsyncIODelete(), *PackageDatas, PluginsToRemap);
+	WriterDebugName = TEXT("DirectoryWriter");
+
+	DiffModeHelper->InitializePackageWriter(PackageWriter);
+
+	FConfigFile PlatformEngineIni;
+	FConfigCacheIni::LoadLocalIniFile(PlatformEngineIni, TEXT("Engine"), true, *TargetPlatform->IniPlatformName());
+
+	bool bLegacyBulkDataOffsets = false;
+	PlatformEngineIni.GetBool(TEXT("Core.System"), TEXT("LegacyBulkDataOffsets"), bLegacyBulkDataOffsets);
+	if (bLegacyBulkDataOffsets)
+	{
+		UE_LOG(LogCook, Warning, TEXT("Engine.ini:[Core.System]:LegacyBulkDataOffsets is no longer supported in UE5. The intended use was to reduce patch diffs, but UE5 changed cooked bytes in every package for other reasons, so removing support for this flag does not cause additional patch diffs."));
+	}
+
+	FCookSavePackageContext* Context = new FCookSavePackageContext(TargetPlatform, PackageWriter, WriterDebugName);
+	Context->SaveContext.SetValidator(MakeUnique<FCookedSavePackageValidator>(TargetPlatform, *this));
+	return Context;
+}
+*/
 
 /*
 * Get the cooking directory of a given package based on a given target platform & parent root cooking directory.

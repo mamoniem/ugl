@@ -50,6 +50,10 @@ private:
 	bool CookModifiedPackages(const TArray<UPackage*> PackagesList, const TArray<ITargetPlatform*> TargetPlatformsList);
 	bool CookModifiedPackage(UPackage* Package, ITargetPlatform* TargetPlatform, const FString& CookedFileNamePath);
 	bool CopyModifiedPackages();
+
+	/*
+	UE::Cook::FCookSavePackageContext& CreateSaveContext(const ITargetPlatform* TargetPlatform);
+	*/
 	
 	//Helpers
 	void GetPackagesCookingDirectory(UPackage* Package, const FString& UnrealGameLinkCookedDirectory, const FString& TargetPlatformName, FString& OutPackageCookDirectory);
