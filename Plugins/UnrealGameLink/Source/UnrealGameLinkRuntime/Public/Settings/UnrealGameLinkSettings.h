@@ -33,11 +33,12 @@ enum class ESupportedPlatforms : uint8
 	Mac					= 1,
 	Linux				= 2,
 	PS4					= 3,
-	XB1					= 4,
-	WinGDK				= 5,
-	XboxOneGDK			= 6,
-	XSX					= 7,
-	Switch				= 8
+	PS5					= 4,
+	XB1					= 5,
+	WinGDK				= 6,
+	XboxOneGDK			= 7,
+	XSX					= 8,
+	Switch				= 9
 };
 
 USTRUCT()
