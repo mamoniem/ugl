@@ -37,15 +37,13 @@
 #include "ISourceControlModule.h"
 #include "SourceControl/Public/SourceControlHelpers.h"
 
-#include "UnrealEdGlobals.h"
 #include "UObject/SavePackage.h"
-//#include "EditorDomain/EditorDomainUtils.h"
-#include "Serialization/PackageWriter.h"
-#include "PackageHelperFunctions.h"
 #include "CookOnTheSide/CookOnTheFlyServer.h"
-#include "ZenStoreWriter.h"
+#include "Editor/UnrealEdEngine.h"
+#include "UnrealEdGlobals.h"
+//#include "PackageWriterToSharedBuffer.h"
 //#include "UnrealEd/Private/Cooker/LooseCookedPackageWriter.h"
-#include "CookOnTheSide/CookOnTheFlyServer.h"
+
 
 static const FName UnrealGameLinkTabName("UnrealGameLink");
 
@@ -541,7 +539,7 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 		SAVE_KeepGUID;
 
 	//TODO::Expose more flags to the project settings
-	EObjectFlags TopLevelFlags = RF_Public; //RF_Standalone
+	EObjectFlags TopLevelFlags = RF_Public;
 	if (Cast<UWorld>(Package))
 		TopLevelFlags = RF_NoFlags;
 
@@ -567,41 +565,24 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 
 	GIsCookerLoadingPackage = true;
 
-	//GUnrealEd->CookServer->FindOrCreateSaveContext(TargetPlatform);
-
-	/*
-	const FString PlatformString;
-	const FString ResolvedRootPath;
-	const FString ResolvedMetadataPath;
-
-	IPackageWriter* PackageWriter = new FZenStoreWriter(ResolvedRootPath, ResolvedMetadataPath, TargetPlatform);
-	IPackageWriter::FBeginPackageInfo BeginInfo;
-	BeginInfo.PackageName = Package->GetFName();
-	PackageWriter->BeginPackage(BeginInfo);
-	*/
-
 	TArray< ITargetPlatform*> Targets;
 	Targets.Add(TargetPlatform);
+	bool isRealtimeMode = GUnrealEd->CookServer->IsRealtimeMode();
+	bool isOnTheFlyMode = GUnrealEd->CookServer->IsCookOnTheFlyMode();
+	bool isByTheBookMode = GUnrealEd->CookServer->IsCookByTheBookMode();
+	bSuccess = GUnrealEd->CookServer->RequestPackage(Package->GetFName(), Targets, true);
 
-	UCookOnTheFlyServer* server = NewObject<UCookOnTheFlyServer>();
-	ECookInitializationFlags CookFlags = ECookInitializationFlags::None;
-	server->Initialize(ECookMode::CookByTheBookFromTheEditor, CookFlags);
-	bSuccess = server->RequestPackage(Package->GetFName(), Targets, true);
-
-	//FSavePackageContext SavePackageContext(TargetPlatform, PackageWriter);
+	//this method use the body of the SavePackageHelper() function
+	/*
 	FSavePackageArgs SaveArgs;
-	//SaveArgs.SavePackageContext = &SavePackageContext;
 	SaveArgs.TopLevelFlags = TopLevelFlags;
 	SaveArgs.Error = GError;
-	SaveArgs.bForceByteSwapping = false;
-	SaveArgs.bWarnOfLongFilename = false;
-	SaveArgs.SaveFlags = SaveFlags;
+	SaveArgs.SaveFlags = SaveFlags; //SAVE_Concurrent | SAVE_Async | SAVE_Unversioned | SAVE_ComputeHash | SAVE_KeepGUID;
 	SaveArgs.TargetPlatform = TargetPlatform;
-	SaveArgs.FinalTimeStamp = FDateTime::MinValue();
-	SaveArgs.bSlowTask = false;
-	//SaveArgs.SavePackageContext = &SavePackageContext;
-	SaveArgs.SavePackageContext = nullptr;
+	bSuccess = GEditor->SavePackage(Package, nullptr, *CookedFileNamePath, SaveArgs);
+	*/
 
+	//UE4.x, this will be deprecated sometime in UE5.x, in UE5.0 it warns about future deprecation
 	/*
 	FSavePackageResultStruct SaveResult = GEditor->Save
 	(
@@ -621,11 +602,10 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 		nullptr
 	);
 	*/
-	
 
 	GIsCookerLoadingPackage = false;
 
-	server->ShutdownCookOnTheFly();
+	//bSuccess = SaveResult == ESavePackageResult::Success ? true : false;
 
 	//Notify if user set the option
 	if (bNotifyCookingResults)
