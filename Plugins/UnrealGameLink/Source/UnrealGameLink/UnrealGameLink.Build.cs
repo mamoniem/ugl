@@ -60,8 +60,8 @@ public class UnrealGameLink : ModuleRules
 				"SlateCore",
 				"EngineSettings",
 				"SourceControl",
-				//"DerivedDataCache", //needed for EditorDomainUtils.h in order to include DerivedDataCache.h
 				"UnrealGameLinkRuntime",
+				"IoStoreUtilities",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
