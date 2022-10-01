@@ -447,6 +447,9 @@ bool FUnrealGameLinkModule::GetAllTargetPackagingPlatforms(TArray<ITargetPlatfor
 
 		for (ITargetPlatform* EngineTarget : EngineTargetPlatforms)
 		{
+			if (bDebugEditorPackagesOperations)
+				UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::GetAllTargetPackagingPlatforms, ITargetPlatformManagerModule supports platform [%s]"), *EngineTarget->PlatformName());
+
 			if (UserSettingsTargetPackaingPlaftormNames.Contains(EngineTarget->PlatformName()))
 				OutPackagingPlatforms.AddUnique(EngineTarget);
 		}
