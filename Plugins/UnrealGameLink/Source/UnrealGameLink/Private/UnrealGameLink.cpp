@@ -42,6 +42,7 @@
 #include "IUATHelperModule.h"
 #include "Styling/AppStyle.h"
 #include "ITurnkeyIOModule.h"
+#include "GenericPlatform/GenericPlatformMisc.h"
 
 /*
 #include "AnalyticsEventAttribute.h"
@@ -608,53 +609,25 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	);
 
 	FString ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::GetProjectFilePath());
-	ProjectDir = ProjectDir.Replace(TEXT("/"), TEXT("\\"));
-	FString OutputDir = CookingDir.Replace(TEXT("/"), TEXT("\\"));
+	//ProjectDir = ProjectDir.Replace(TEXT("/"), TEXT("\\"));
+	//FString OutputDir = CookingDir.Replace(TEXT("/"), TEXT("\\"));
 
-	const FString ProjectPath = FPaths::ConvertRelativePathToFull(FPaths::GetProjectFilePath());
-	const FString UBTPlatformString = TargetPlatform->GetPlatformInfo().UBTPlatformString;
-
-	FString BuildCookRunParams = FString::Printf(TEXT("-nop4 -utf8output -nocompileeditor -skipbuildeditor -cook -FastCook -cooksinglepackagenorefs -iterate -skipstage"));
-	BuildCookRunParams += FString::Printf(TEXT(" -project=\"%s\""), *ProjectPath);
-	//BuildCookRunParams += FString::Printf(TEXT(" -targetplatform=%s"), *TargetPlatform->PlatformName());
-	BuildCookRunParams += FString::Printf(TEXT(" -targetplatform=%s"), *UBTPlatformString);
-	BuildCookRunParams += FString::Printf(TEXT(" -PACKAGE=%s"), *Package->GetName());
-	BuildCookRunParams += FString::Printf(TEXT(" -OutputDir=\"%s\\\""), *OutputDir);
-
-	/*
+	FString Cmd;
+	Cmd.Appendf(TEXT("\"%s\""), *FPaths::Combine(FPaths::ConvertRelativePathToFull(FPaths::EngineDir()), "Binaries/Win64/UnrealEditor-Cmd.exe"));
 	Cmd.Appendf(TEXT(" \"%s\""), *ProjectDir);
 	Cmd.Appendf(TEXT(" -run=cook"));
 	Cmd.Appendf(TEXT(" -targetplatform=%s"), *TargetPlatform->PlatformName());
 	Cmd.Appendf(TEXT(" -FastCook"));
 	Cmd.Appendf(TEXT(" -cooksinglepackagenorefs"));
 	Cmd.Appendf(TEXT(" -PACKAGE=%s"), *Package->GetName());
-	Cmd.Appendf(TEXT(" -OutputDir=\"%s/\""), *OutputDir);
-	*/
-	
-	
-	FString TurnkeyParams = FString::Printf(TEXT("-command=verifysdk -platform=%s -UpdateIfNeeded %s"), *UBTPlatformString, *ITurnkeyIOModule::Get().GetUATParams());
-	if (!ProjectPath.IsEmpty())
-	{
-		TurnkeyParams.Appendf(TEXT(" -project=\"%s\""), *ProjectPath);
-	}
-	FString Cmd;
-	if (!ProjectPath.IsEmpty())
-	{
-		Cmd.Appendf(TEXT(" -ScriptsForProject=\"%s\" "), *ProjectPath);
-	}
-	Cmd.Appendf(TEXT("Turnkey %s BuildCookRun %s"), *TurnkeyParams, *BuildCookRunParams);
+	Cmd.Appendf(TEXT(" -OutputDir=\"%s/\""), *CookingDir);
+	//Cmd = Cmd.ReplaceQuotesWithEscapedQuotes();
 
-	FText TaskDesc = LOCTEXT("CookingContentTaskName", "Cooking content");
-	FText TaskName = LOCTEXT("CookingContentTaskName", "Cooking content");
-	const FSlateBrush* TaskIcon = FAppStyle::Get().GetBrush(TEXT("MainFrame.CookContent"));
+	//todo::remove
+	UE_LOG(LogUnrealGameLink, Log, TEXT("%s"), *Cmd);
 
-	/*
-	That would spit something like:
-	UATHelper: Cooking content (Windows): Parsing command line: -ScriptsForProject=D:/Work/Projects/UE4/Plugins/UGL/UGL/testUGL.uproject Turnkey -command=verifysdk -platform=Win64 -UpdateIfNeeded -EditorIO -EditorIOPort=50505 -project=D:/Work/Projects/UE4/Plugins/UGL/UGL/testUGL.uproject BuildCookRun -nop4 -utf8output -nocompileeditor -skipbuildeditor -cook -FastCook -cooksinglepackagenorefs -iterate -skipstage -project=D:/Work/Projects/UE4/Plugins/UGL/UGL/testUGL.uproject -targetplatform=Win64 -PACKAGE=/Game/LevelPrototyping/Materials/MI_Solid_Blue -OutputDir="D:\Work\Projects\UE4\Plugins\UGL\UGL\Saved\UnrealGameLinkCooked" -nocompile"
-	*/
-	IUATHelperModule::Get().CreateUatTask(Cmd, TargetPlatform->DisplayName(), TaskDesc, TaskName, TaskIcon, nullptr);
-
-
+	FOutputDevice& output = *GLog;
+	bSuccess = FGenericPlatformMisc::Exec(NULL, *Cmd, output);
 
 
 
@@ -680,7 +653,7 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	*/
 	GIsCookerLoadingPackage = false;
 
-	bSuccess = SaveResult == ESavePackageResult::Success ? true : false;
+	//bSuccess = SaveResult == ESavePackageResult::Success ? true : false;
 
 	//Notify if user set the option
 	if (bNotifyCookingResults)
