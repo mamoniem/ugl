@@ -61,6 +61,10 @@ public class UnrealGameLink : ModuleRules
 				"EngineSettings",
 				"SourceControl",
 				"UnrealGameLinkRuntime",
+				//"TurnkeySupport", //candidate before going through UATHelper (below) righaway w UE5.x
+				"UATHelper",
+				"Analytics",
+				"TargetPlatform"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

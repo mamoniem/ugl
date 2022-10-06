@@ -48,7 +48,7 @@ private:
 	bool GetAllModifiedPackages(const bool CheckMaps, const bool CheckAssets, TArray<UPackage*>& OutPackages);
 	bool GetAllTargetPackagingPlatforms(TArray<ITargetPlatform*>& OutPackagingPlatforms);
 	bool CookModifiedPackages(const TArray<UPackage*> PackagesList, const TArray<ITargetPlatform*> TargetPlatformsList);
-	bool CookModifiedPackage(UPackage* Package, ITargetPlatform* TargetPlatform, const FString& CookedFileNamePath);
+	bool CookModifiedPackage(UPackage* Package, ITargetPlatform* TargetPlatform, const FString& CookDir, const FString& CookedFileNamePath);
 	bool CopyModifiedPackages();
 	
 	//Helpers

@@ -37,6 +37,16 @@
 #include "ISourceControlModule.h"
 #include "SourceControl/Public/SourceControlHelpers.h"
 
+//UE5 downwards
+#include "UObject/SavePackage.h"
+#include "IUATHelperModule.h"
+#include "Styling/AppStyle.h"
+/*
+#include "AnalyticsEventAttribute.h"
+#include "Interfaces/ITargetPlatform.h"
+#include "Interfaces/ITargetPlatformManagerModule.h"
+*/
+
 static const FName UnrealGameLinkTabName("UnrealGameLink");
 
 #define LOCTEXT_NAMESPACE "FUnrealGameLinkModule"
@@ -491,12 +501,12 @@ bool FUnrealGameLinkModule::CookModifiedPackages(const TArray<UPackage*> Package
 		for (UPackage* package : PackagesList)
 		{
 			//[1] Get the directory for cooking
-			FString CookingDirectory;
-			GetPackagesCookingDirectory(package, UnrealGameLinkCookDirectory, TargetPlatform->PlatformName(), CookingDirectory);
+			FString CookingFileDirectory;
+			GetPackagesCookingDirectory(package, UnrealGameLinkCookDirectory, TargetPlatform->PlatformName(), CookingFileDirectory);
 			if (bDebugEditorPackagesOperations)
-				UE_LOG(LogUnrealGameLink, Log, TEXT("Cooking Dir for Packag [%s] is :%s"), *package->GetName(), *CookingDirectory);
+				UE_LOG(LogUnrealGameLink, Log, TEXT("Cooking Dir for Packag [%s] is :%s"), *package->GetName(), *CookingFileDirectory);
 
-			if (CookingDirectory.IsEmpty())
+			if (CookingFileDirectory.IsEmpty())
 			{
 				if (bDebugEditorPackagesOperations)
 					UE_LOG(LogUnrealGameLink, Error, TEXT("Faile to get or create Cooking Dir for the Packag [%s]"), *package->GetName());
@@ -504,7 +514,7 @@ bool FUnrealGameLinkModule::CookModifiedPackages(const TArray<UPackage*> Package
 			}
 
 			//[2] cook the current package in the loop
-			bSuccess = CookModifiedPackage(package, TargetPlatform, CookingDirectory);
+			bSuccess = CookModifiedPackage(package, TargetPlatform, UnrealGameLinkCookDirectory, CookingFileDirectory);
 		}
 	}
 
@@ -518,7 +528,7 @@ bool FUnrealGameLinkModule::CookModifiedPackages(const TArray<UPackage*> Package
 * @param TargetPlatform					The platform we gonna cook for (usually win64, XbGDK or XbX. But others are okay)
 * @param CookedFileNamePath				The name and location for the resulted cooked package
 */
-bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatform* TargetPlatform, const FString& CookedFileNamePath)
+bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatform* TargetPlatform, const FString& CookingDir, const FString& CookedFileNamePath)
 {
 	bool bSuccess = false;
 
@@ -556,6 +566,73 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	}
 
 	GIsCookerLoadingPackage = true;
+
+	/*
+	For UE5.x we going in a different route, as things changed, the best reference is
+	TurnkeySupportModule.cpp CookOrPackage(...) which calls FTurnkeyEditorSupport::RunUAT(...)
+	which calls the IUATHelperModule::Get().CreateUatTask(...)
+	*/
+	/*
+	TArray<FAnalyticsEventAttribute> AnalyticsParamArray;
+	TargetPlatform->GetPlatformSpecificProjectAnalytics(AnalyticsParamArray);
+	*/
+
+
+	/*
+	FSavePackageArgs SaveArgs;
+	//SaveArgs.TargetPlatform = TargetPlatform;
+	FString const TempPackageName = Package->GetName();
+	FString const TempPackageFileName = FPackageName::LongPackageNameToFilename(TempPackageName, FPackageName::GetAssetPackageExtension());
+	FSavePackageResultStruct SaveResult = GEditor->Save
+	(
+		Package,
+		nullptr,
+		*CookedFileNamePath,
+		SaveArgs
+	);
+	*/
+
+
+
+	FSavePackageArgs SaveArgs;
+	FString const TempPackageName = Package->GetName();
+	FString const TempPackageFileName = FPackageName::LongPackageNameToFilename(TempPackageName, FPackageName::GetAssetPackageExtension());
+	FSavePackageResultStruct SaveResult = GEditor->Save
+	(
+		Package,
+		nullptr,
+		*TempPackageFileName,
+		SaveArgs
+	);
+
+	FString ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::GetProjectFilePath());
+	ProjectDir = ProjectDir.Replace(TEXT("/"), TEXT("\\"));
+	FString OutputDir = CookingDir.Replace(TEXT("/"), TEXT("\\"));
+
+	FString Cmd;
+	//Cmd.Appendf(TEXT(" %s"), *FPaths::GetProjectFilePath());
+	//Cmd.Appendf(TEXT(" -ScriptsForProject=\"%s\" "), *ProjectDir);
+	Cmd.Appendf(TEXT(" \"%s\""), *ProjectDir);
+	Cmd.Appendf(TEXT(" -run=cook"));
+	Cmd.Appendf(TEXT(" -targetplatform=%s"), *TargetPlatform->PlatformName());
+	Cmd.Appendf(TEXT(" -FastCook"));
+	Cmd.Appendf(TEXT(" -cooksinglepackagenorefs"));
+	Cmd.Appendf(TEXT(" -PACKAGE=%s"), *Package->GetName());
+	Cmd.Appendf(TEXT(" -OutputDir=\"%s/\""), *OutputDir);
+	//Cmd = Cmd.Replace(TEXT("/"), TEXT("\\"));
+	
+	FText TaskDesc = LOCTEXT("CookingContentTaskName", "Cooking content");
+	FText TaskName = LOCTEXT("CookingContentTaskName", "Cooking content");
+	const FSlateBrush* TaskIcon = FAppStyle::Get().GetBrush(TEXT("MainFrame.CookContent"));
+
+	IUATHelperModule::Get().CreateUatTask(Cmd, TargetPlatform->DisplayName(), TaskDesc, TaskName, TaskIcon, nullptr);
+
+
+
+
+
+	//TODO::remove, this is UE4.x remains
+	/*
 	FSavePackageResultStruct SaveResult = GEditor->Save
 	(
 		Package,
@@ -573,6 +650,7 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 		nullptr,
 		nullptr
 	);
+	*/
 	GIsCookerLoadingPackage = false;
 
 	bSuccess = SaveResult == ESavePackageResult::Success ? true : false;
