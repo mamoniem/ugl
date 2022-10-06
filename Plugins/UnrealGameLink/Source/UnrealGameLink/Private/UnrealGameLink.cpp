@@ -41,6 +41,8 @@
 #include "UObject/SavePackage.h"
 #include "IUATHelperModule.h"
 #include "Styling/AppStyle.h"
+#include "ITurnkeyIOModule.h"
+
 /*
 #include "AnalyticsEventAttribute.h"
 #include "Interfaces/ITargetPlatform.h"
@@ -601,7 +603,7 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	(
 		Package,
 		nullptr,
-		*TempPackageFileName,
+		*CookedFileNamePath, //path to a cooked uasset verison (windows only, now on in UE5.x other platforms would need an ICookedPackageWriter passed to the SaveArgs)
 		SaveArgs
 	);
 
@@ -609,9 +611,17 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	ProjectDir = ProjectDir.Replace(TEXT("/"), TEXT("\\"));
 	FString OutputDir = CookingDir.Replace(TEXT("/"), TEXT("\\"));
 
-	FString Cmd;
-	//Cmd.Appendf(TEXT(" %s"), *FPaths::GetProjectFilePath());
-	//Cmd.Appendf(TEXT(" -ScriptsForProject=\"%s\" "), *ProjectDir);
+	const FString ProjectPath = FPaths::ConvertRelativePathToFull(FPaths::GetProjectFilePath());
+	const FString UBTPlatformString = TargetPlatform->GetPlatformInfo().UBTPlatformString;
+
+	FString BuildCookRunParams = FString::Printf(TEXT("-nop4 -utf8output -nocompileeditor -skipbuildeditor -cook -FastCook -cooksinglepackagenorefs -iterate -skipstage"));
+	BuildCookRunParams += FString::Printf(TEXT(" -project=\"%s\""), *ProjectPath);
+	//BuildCookRunParams += FString::Printf(TEXT(" -targetplatform=%s"), *TargetPlatform->PlatformName());
+	BuildCookRunParams += FString::Printf(TEXT(" -targetplatform=%s"), *UBTPlatformString);
+	BuildCookRunParams += FString::Printf(TEXT(" -PACKAGE=%s"), *Package->GetName());
+	BuildCookRunParams += FString::Printf(TEXT(" -OutputDir=\"%s\\\""), *OutputDir);
+
+	/*
 	Cmd.Appendf(TEXT(" \"%s\""), *ProjectDir);
 	Cmd.Appendf(TEXT(" -run=cook"));
 	Cmd.Appendf(TEXT(" -targetplatform=%s"), *TargetPlatform->PlatformName());
@@ -619,12 +629,29 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	Cmd.Appendf(TEXT(" -cooksinglepackagenorefs"));
 	Cmd.Appendf(TEXT(" -PACKAGE=%s"), *Package->GetName());
 	Cmd.Appendf(TEXT(" -OutputDir=\"%s/\""), *OutputDir);
-	//Cmd = Cmd.Replace(TEXT("/"), TEXT("\\"));
+	*/
 	
+	
+	FString TurnkeyParams = FString::Printf(TEXT("-command=verifysdk -platform=%s -UpdateIfNeeded %s"), *UBTPlatformString, *ITurnkeyIOModule::Get().GetUATParams());
+	if (!ProjectPath.IsEmpty())
+	{
+		TurnkeyParams.Appendf(TEXT(" -project=\"%s\""), *ProjectPath);
+	}
+	FString Cmd;
+	if (!ProjectPath.IsEmpty())
+	{
+		Cmd.Appendf(TEXT(" -ScriptsForProject=\"%s\" "), *ProjectPath);
+	}
+	Cmd.Appendf(TEXT("Turnkey %s BuildCookRun %s"), *TurnkeyParams, *BuildCookRunParams);
+
 	FText TaskDesc = LOCTEXT("CookingContentTaskName", "Cooking content");
 	FText TaskName = LOCTEXT("CookingContentTaskName", "Cooking content");
 	const FSlateBrush* TaskIcon = FAppStyle::Get().GetBrush(TEXT("MainFrame.CookContent"));
 
+	/*
+	That would spit something like:
+	UATHelper: Cooking content (Windows): Parsing command line: -ScriptsForProject=D:/Work/Projects/UE4/Plugins/UGL/UGL/testUGL.uproject Turnkey -command=verifysdk -platform=Win64 -UpdateIfNeeded -EditorIO -EditorIOPort=50505 -project=D:/Work/Projects/UE4/Plugins/UGL/UGL/testUGL.uproject BuildCookRun -nop4 -utf8output -nocompileeditor -skipbuildeditor -cook -FastCook -cooksinglepackagenorefs -iterate -skipstage -project=D:/Work/Projects/UE4/Plugins/UGL/UGL/testUGL.uproject -targetplatform=Win64 -PACKAGE=/Game/LevelPrototyping/Materials/MI_Solid_Blue -OutputDir="D:\Work\Projects\UE4\Plugins\UGL\UGL\Saved\UnrealGameLinkCooked" -nocompile"
+	*/
 	IUATHelperModule::Get().CreateUatTask(Cmd, TargetPlatform->DisplayName(), TaskDesc, TaskName, TaskIcon, nullptr);
 
 

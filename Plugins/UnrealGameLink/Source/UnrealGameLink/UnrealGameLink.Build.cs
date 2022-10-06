@@ -64,7 +64,8 @@ public class UnrealGameLink : ModuleRules
 				//"TurnkeySupport", //candidate before going through UATHelper (below) righaway w UE5.x
 				"UATHelper",
 				"Analytics",
-				"TargetPlatform"
+				"TargetPlatform",
+				"TurnkeyIO",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
