@@ -613,7 +613,7 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	//FString OutputDir = CookingDir.Replace(TEXT("/"), TEXT("\\"));
 
 	FString Cmd;
-	Cmd.Appendf(TEXT("\"%s\""), *FPaths::Combine(FPaths::ConvertRelativePathToFull(FPaths::EngineDir()), "Binaries/Win64/UnrealEditor-Cmd.exe"));
+	//Cmd.Appendf(TEXT("\"%s\""), *FPaths::Combine(FPaths::ConvertRelativePathToFull(FPaths::EngineDir()), "Binaries/Win64/UnrealEditor-Cmd.exe"));
 	Cmd.Appendf(TEXT(" \"%s\""), *ProjectDir);
 	Cmd.Appendf(TEXT(" -run=cook"));
 	Cmd.Appendf(TEXT(" -targetplatform=%s"), *TargetPlatform->PlatformName());
@@ -626,10 +626,23 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	//todo::remove
 	UE_LOG(LogUnrealGameLink, Log, TEXT("%s"), *Cmd);
 
-	FOutputDevice& output = *GLog;
-	bSuccess = FGenericPlatformMisc::Exec(NULL, *Cmd, output);
-
-
+	//FOutputDevice& output = *GLog;
+	//bSuccess = FGenericPlatformMisc::Exec(nullptr, *Cmd, output);
+	
+	FString exe;
+	exe.Appendf(TEXT("\"%s\""), *FPaths::Combine(FPaths::ConvertRelativePathToFull(FPaths::EngineDir()), "Binaries/Win64/UnrealEditor-Cmd.exe"));
+	FPlatformProcess::CreateProc
+	(
+		*exe,
+		*Cmd,
+		false, 
+		true, 
+		true, 
+		0, 
+		0, 
+		nullptr, 
+		nullptr
+	);
 
 	//TODO::remove, this is UE4.x remains
 	/*
