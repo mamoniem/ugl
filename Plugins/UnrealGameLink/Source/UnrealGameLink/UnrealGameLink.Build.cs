@@ -27,6 +27,8 @@ public class UnrealGameLink : ModuleRules
 		PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
+				"Editor/UnrealEd/Private/Cooker",
+				"Runtime/CoreUObject/Internal"
 			}
 			);
 				
@@ -34,6 +36,7 @@ public class UnrealGameLink : ModuleRules
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				// ... add other private include paths required here ...
+				//"Editor/UnrealEd/Private/Cooker"
 			}
 			);
 			
@@ -42,6 +45,7 @@ public class UnrealGameLink : ModuleRules
 			new string[]
 			{
 				"Core",
+				"CoreUObject",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -66,6 +70,7 @@ public class UnrealGameLink : ModuleRules
 				"Analytics",
 				"TargetPlatform",
 				"TurnkeyIO",
+				"IoStoreUtilities",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

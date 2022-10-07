@@ -24,6 +24,8 @@
 /* Includes for Project Settings */
 #include "Settings/UnrealGameLinkSettings.h"
 
+//#include "CookOnTheSide/CookOnTheFlyServer.h"
+
 class FToolBarBuilder;
 class FMenuBuilder;
 
@@ -79,4 +81,6 @@ private:
 	bool bDebugEditorCooker = true;
 	bool bDebugRuntimeTicks = true;
 	bool bDebugRuntimePackagesReloading = true;
+
+	//TUniquePtr<FDiffModeCookServerUtils> DiffModeHelper;
 };

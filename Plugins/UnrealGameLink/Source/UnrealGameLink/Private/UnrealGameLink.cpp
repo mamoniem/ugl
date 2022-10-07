@@ -50,6 +50,13 @@
 #include "Interfaces/ITargetPlatformManagerModule.h"
 */
 
+//#include "LooseCookedPackageWriter.h"
+#include "CookOnTheSide/CookOnTheFlyServer.h"
+
+//#include "Commandlets/CookCommandlet.h"
+#include <Editor/UnrealEd/Private/Cooker/AsyncIODelete.h>
+#include <Editor/UnrealEd/Private/Cooker/LooseCookedPackageWriter.h>
+
 static const FName UnrealGameLinkTabName("UnrealGameLink");
 
 #define LOCTEXT_NAMESPACE "FUnrealGameLinkModule"
@@ -524,6 +531,19 @@ bool FUnrealGameLinkModule::CookModifiedPackages(const TArray<UPackage*> Package
 	return true;
 }
 
+//TODO::cleanup
+TUniquePtr<FAsyncIODelete> AsyncIODelete;
+FAsyncIODelete& GetAsyncIODelete()
+{
+	if (AsyncIODelete)
+		return *AsyncIODelete;
+
+	FString SharedDeleteRoot = FPaths::SandboxesDir();
+	FPaths::NormalizeDirectoryName(SharedDeleteRoot);
+	AsyncIODelete = MakeUnique<FAsyncIODelete>(SharedDeleteRoot);
+	return *AsyncIODelete;
+}
+
 /*
 * Cook the given Package for the specified given TargetPlatform and put the final cooked package in the CookedFileNamePath.
 * 
@@ -643,6 +663,16 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 		nullptr, 
 		nullptr
 	);
+
+	ITargetPlatformManagerModule& TPM = GetTargetPlatformManagerRef();
+
+	const FString PlatformString;
+	const FString ResolvedRootPath;
+	const FString ResolvedMetadaPath;
+	ICookedPackageWriter* PkgWriter = nullptr;
+	//PkgWriter = new FLooseCookedPackageWriter(ResolvedRootPath, ResolvedMetadaPath, TargetPlatform, GetAsyncIODelete(), *PackageDatas, PluginsToRemap);
+
+	//UCookCommandlet::staticm
 
 	//TODO::remove, this is UE4.x remains
 	/*
