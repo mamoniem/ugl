@@ -495,6 +495,9 @@ bool FUnrealGameLinkModule::CookModifiedPackages(const TArray<UPackage*> Package
 		if (bDebugEditorPackagesOperations)
 			UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::CookModifiedPackages(), Started cooking packages for the [%s] target plaftorm."), *TargetPlatform->PlatformName());
 
+		TArray<UPackage*> TargetPackages;
+		TArray<FString> TargetFilePaths;
+
 		for (UPackage* package : PackagesList)
 		{
 			//[1] Get the directory for cooking
@@ -510,9 +513,12 @@ bool FUnrealGameLinkModule::CookModifiedPackages(const TArray<UPackage*> Package
 				return false;
 			}
 
-			//[2] cook the current package in the loop
-			bSuccess = CookModifiedPackage(package, TargetPlatform, UnrealGameLinkCookDirectory, CookingFileDirectory);
+			TargetPackages.Add(package);
+			TargetFilePaths.Add(CookingFileDirectory);
 		}
+
+		//[2] cook the current package in the loop
+		bSuccess = CookAllModifiedPackages(TargetPackages, TargetPlatform, UnrealGameLinkCookDirectory, TargetFilePaths);
 	}
 
 	return true;
@@ -525,9 +531,11 @@ bool FUnrealGameLinkModule::CookModifiedPackages(const TArray<UPackage*> Package
 * @param TargetPlatform					The platform we gonna cook for (usually win64, XbGDK or XbX. But others are okay)
 * @param CookedFileNamePath				The name and location for the resulted cooked package
 */
-bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatform* TargetPlatform, const FString& CookingDir, const FString& CookedFileNamePath)
+//bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatform* TargetPlatform, const FString& CookingDir, const FString& CookedFileNamePath)
+bool FUnrealGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, ITargetPlatform* TargetPlatform, const FString& CookingDir, TArray<FString>& CookedFileNamePaths)
 {
 	bool bSuccess = false;
+	FString TargetPackagesMergedNames;
 
 	//TODO::Expose more flags to the project settings
 	uint32 SaveFlags = 
@@ -537,44 +545,52 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 		SAVE_ComputeHash | 
 		SAVE_KeepGUID;
 
-	//TODO::Expose more flags to the project settings
-	EObjectFlags TopLevelFlags = RF_Public;
-	if (Cast<UWorld>(Package))
-		TopLevelFlags = RF_NoFlags;
-
-	//Check if the target have editor only, if so, let's set it. But make sure at the end before we exit, we clear that flag again
-	if (!TargetPlatform->HasEditorOnlyData())
-		Package->SetPackageFlags(PKG_FilterEditorOnly);
-	else
-		Package->ClearPackageFlags(PKG_FilterEditorOnly);
-
-	//Before we cook a package, let's check and delte if exist, just in case the folder clean failed at start
-	if (FPaths::FileExists(CookedFileNamePath))
+	for (int32 i = 0; i < Packages.Num(); i++)
 	{
-		IFileManager::Get().Delete(*CookedFileNamePath);
+		//merge all packages into single command argument split by '+'
+		if (i != 0)
+			TargetPackagesMergedNames.Appendf(TEXT("+"));
+		TargetPackagesMergedNames.Appendf(TEXT("%s"), *Packages[i]->GetName());
+
+		//TODO::Expose more flags to the project settings
+		EObjectFlags TopLevelFlags = RF_Public;
+		if (Cast<UWorld>(Packages[i]))
+			TopLevelFlags = RF_NoFlags;
+
+		//Check if the target have editor only, if so, let's set it. But make sure at the end before we exit, we clear that flag again
+		if (!TargetPlatform->HasEditorOnlyData())
+			Packages[i]->SetPackageFlags(PKG_FilterEditorOnly);
+		else
+			Packages[i]->ClearPackageFlags(PKG_FilterEditorOnly);
+
+		//Before we cook a package, let's check and delte if exist, just in case the folder clean failed at start
+		if (FPaths::FileExists(CookedFileNamePaths[i]))
+		{
+			IFileManager::Get().Delete(*CookedFileNamePaths[i]);
+		}
+
+		Packages[i]->FullyLoad();
+		TArray<UObject*> PackageContent;
+		GetObjectsWithOuter(Packages[i], PackageContent);
+		for (const auto& item : PackageContent)
+		{
+			item->BeginCacheForCookedPlatformData(TargetPlatform);
+		}
+
+		GIsCookerLoadingPackage = true;
+
+
+		FSavePackageArgs SaveArgs;
+		FString const TempPackageName = Packages[i]->GetName();
+		FString const TempPackageFileName = FPackageName::LongPackageNameToFilename(TempPackageName, FPackageName::GetAssetPackageExtension());
+		FSavePackageResultStruct SaveResult = GEditor->Save
+		(
+			Packages[i],
+			nullptr,
+			*CookedFileNamePaths[i], //path to a cooked uasset verison (windows only, now on in UE5.x other platforms would need an ICookedPackageWriter passed to the SaveArgs)
+			SaveArgs
+		);
 	}
-
-	Package->FullyLoad();
-	TArray<UObject*> PackageContent;
-	GetObjectsWithOuter(Package, PackageContent);
-	for (const auto& item : PackageContent)
-	{
-		item->BeginCacheForCookedPlatformData(TargetPlatform);
-	}
-
-	GIsCookerLoadingPackage = true;
-
-
-	FSavePackageArgs SaveArgs;
-	FString const TempPackageName = Package->GetName();
-	FString const TempPackageFileName = FPackageName::LongPackageNameToFilename(TempPackageName, FPackageName::GetAssetPackageExtension());
-	FSavePackageResultStruct SaveResult = GEditor->Save
-	(
-		Package,
-		nullptr,
-		*CookedFileNamePath, //path to a cooked uasset verison (windows only, now on in UE5.x other platforms would need an ICookedPackageWriter passed to the SaveArgs)
-		SaveArgs
-	);
 
 	FString ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::GetProjectFilePath());
 
@@ -587,7 +603,7 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	Cmd.Appendf(TEXT(" -targetplatform=%s"), *TargetPlatform->PlatformName());
 	Cmd.Appendf(TEXT(" -FastCook"));
 	Cmd.Appendf(TEXT(" -cooksinglepackagenorefs"));
-	Cmd.Appendf(TEXT(" -PACKAGE=%s"), *Package->GetName());
+	Cmd.Appendf(TEXT(" -PACKAGE=%s"), *TargetPackagesMergedNames);
 	Cmd.Appendf(TEXT(" -OutputDir=\"%s/\""), *CookingDir);
 
 	//todo::remove
@@ -665,47 +681,55 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	//Notify if user set the option
 	if (bNotifyCookingResults)
 	{
-		FText notificationMessage = FText::Format
-		(
-			LOCTEXT("FUnrealGameLinkModuleNotification", "{0} Cooking package [{1}] for platform [{2}]"),
-			bSuccess ? FText::FromString(ANSI_TO_TCHAR("Success")) : FText::FromString(ANSI_TO_TCHAR("Failure")),
-			FText::FromString(Package->GetName()),
-			FText::FromString(TargetPlatform->PlatformName())
-		);
-		FNotificationInfo notificationInfo(notificationMessage);
-		notificationInfo.ExpireDuration = 4.f; //fade in 1 sec, out 1 sec, and remains for 2 sec
-		notificationInfo.FadeInDuration = 1.f;
-		notificationInfo.FadeOutDuration = 1.f;
-		notificationInfo.bFireAndForget = true;
-		notificationInfo.bUseLargeFont = false;
-		notificationInfo.bUseSuccessFailIcons = true;
-		notificationInfo.HyperlinkText = FText::FromString(CookedFileNamePath);
-		notificationInfo.Hyperlink = FSimpleDelegate::CreateLambda([](FString FilePath) { FPlatformProcess::ExploreFolder(*FilePath);}, CookedFileNamePath);
-		FSlateNotificationManager::Get().AddNotification(notificationInfo)->SetCompletionState(bSuccess ? SNotificationItem::ECompletionState::CS_Success : SNotificationItem::ECompletionState::CS_Fail);
-	}
-
-	//last step, if success, we print to keep tracking in log, but also update the temp list in the project settings
-	if (bSuccess)
-	{
-		if (bDebugEditorCooker)
-			UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::CookModifiedPackage, Success cooking the package [%s] for the target platform [%s]"), *Package->GetName(), *TargetPlatform->PlatformName());
-
-		if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
+		for (int32 i = 0; i < Packages.Num(); i++)
 		{
-			UnrealGameLinkProjectSettings->MostRecentModifiedContent.AddUnique(CookedFileNamePath);
-			UnrealGameLinkProjectSettings->SaveConfig(CPF_Config, *UnrealGameLinkProjectSettings->GetDefaultConfigFilename());
+			FText notificationMessage = FText::Format
+			(
+				LOCTEXT("FUnrealGameLinkModuleNotification", "{0} Cooking package [{1}] for platform [{2}]"),
+				bSuccess ? FText::FromString(ANSI_TO_TCHAR("Success")) : FText::FromString(ANSI_TO_TCHAR("Failure")),
+				FText::FromString(Packages[i]->GetName()),
+				FText::FromString(TargetPlatform->PlatformName())
+			);
 
-			if (IsTrackUsage)
+			FNotificationInfo notificationInfo(notificationMessage);
+			notificationInfo.ExpireDuration = 4.f; //fade in 1 sec, out 1 sec, and remains for 2 sec
+			notificationInfo.FadeInDuration = 1.f;
+			notificationInfo.FadeOutDuration = 1.f;
+			notificationInfo.bFireAndForget = true;
+			notificationInfo.bUseLargeFont = false;
+			notificationInfo.bUseSuccessFailIcons = true;
+			notificationInfo.HyperlinkText = FText::FromString(CookedFileNamePaths[i]);
+			notificationInfo.Hyperlink = FSimpleDelegate::CreateLambda([](FString FilePath) { FPlatformProcess::ExploreFolder(*FilePath);}, CookedFileNamePaths[i]);
+			FSlateNotificationManager::Get().AddNotification(notificationInfo)->SetCompletionState(bSuccess ? SNotificationItem::ECompletionState::CS_Success : SNotificationItem::ECompletionState::CS_Fail);
+			
+			//last step, if success, we print to keep tracking in log, but also update the temp list in the project settings
+			if (bDebugEditorCooker)
+				UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::CookModifiedPackage, Success cooking the package [%s] for the target platform [%s]"), *Packages[i]->GetName(), *TargetPlatform->PlatformName());
+
+			if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
 			{
-				TrackedInfoToPush.Append(CookedFileNamePath);
-				TrackedInfoToPush.Append("\n");
+				UnrealGameLinkProjectSettings->MostRecentModifiedContent.AddUnique(CookedFileNamePaths[i]);
+				UnrealGameLinkProjectSettings->SaveConfig(CPF_Config, *UnrealGameLinkProjectSettings->GetDefaultConfigFilename());
+
+				if (IsTrackUsage)
+				{
+					TrackedInfoToPush.Append(CookedFileNamePaths[i]);
+					TrackedInfoToPush.Append("\n");
+				}
 			}
+
+			//reset things to normal before we exit that package
+			if (!TargetPlatform->HasEditorOnlyData())
+				Packages[i]->ClearPackageFlags(PKG_FilterEditorOnly);
 		}
 	}
 
-	//reset things to normal before we exit that package
-	if (!TargetPlatform->HasEditorOnlyData())
-		Package->ClearPackageFlags(PKG_FilterEditorOnly);
+	//TODO::remove, no need anymore!
+	/*
+	if (bSuccess)
+	{
+	}
+	*/
 
 	return true;
 }
