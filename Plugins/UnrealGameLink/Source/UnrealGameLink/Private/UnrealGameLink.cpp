@@ -669,10 +669,24 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 		Output += LatestOutput;
 		LatestOutput = FPlatformProcess::ReadPipe(ReadPipe);
 
+		UE_LOG(LogUnrealGameLink, Log, TEXT("%s"), *LatestOutput);
+
 		//handle abort event
 	}
 
 	FPlatformProcess::ClosePipe(ReadPipe, WritePipe);
+
+	int ExitCode = -1;
+	bool GotReturnCode = FPlatformProcess::GetProcReturnCode(Proc, &ExitCode);
+
+	if (GotReturnCode)
+	{
+		UE_LOG(LogUnrealGameLink, Log, TEXT("FUnrealGameLinkModule::CookModifiedPackage, Exit with code: %d"), GotReturnCode);
+	}
+	else
+	{
+		UE_LOG(LogUnrealGameLink, Log, TEXT("FUnrealGameLinkModule::CookModifiedPackage, Exit with code: %d"), GotReturnCode);
+	}
 
 	/*
 	if (Proc.IsValid())
