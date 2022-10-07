@@ -698,29 +698,9 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	}
 	*/
 
-	//TODO::remove, this is UE4.x remains
-	/*
-	FSavePackageResultStruct SaveResult = GEditor->Save
-	(
-		Package,
-		nullptr,
-		TopLevelFlags,
-		*CookedFileNamePath,
-		GError,
-		nullptr,
-		false,
-		false,
-		SaveFlags,
-		TargetPlatform,
-		FDateTime::MinValue(),
-		false, //TODO::can show a slowtask progressbar if needed
-		nullptr,
-		nullptr
-	);
-	*/
 	GIsCookerLoadingPackage = false;
 
-	//bSuccess = SaveResult == ESavePackageResult::Success ? true : false;
+	bSuccess = GotReturnCode && ExitCode == 1;
 
 	//Notify if user set the option
 	if (bNotifyCookingResults)
