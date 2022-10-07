@@ -648,6 +648,8 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 		return false;
 	}
 
+	verify(FPlatformProcess::CreatePipe(ReadPipe, WritePipe));
+
 	FProcHandle Proc = FPlatformProcess::CreateProc
 	(
 		*exe, 
