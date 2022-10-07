@@ -612,8 +612,12 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	//ProjectDir = ProjectDir.Replace(TEXT("/"), TEXT("\\"));
 	//FString OutputDir = CookingDir.Replace(TEXT("/"), TEXT("\\"));
 
+	FString exe;
+	exe.Appendf(TEXT("%s"), *FPaths::Combine(FPaths::ConvertRelativePathToFull(FPaths::EngineDir()), "Binaries/Win64/UnrealEditor-Cmd.exe"));
+
 	FString Cmd;
 	//Cmd.Appendf(TEXT("\"%s\""), *FPaths::Combine(FPaths::ConvertRelativePathToFull(FPaths::EngineDir()), "Binaries/Win64/UnrealEditor-Cmd.exe"));
+	//Cmd.Appendf(TEXT("shell --encoding=UTF-8"));
 	Cmd.Appendf(TEXT(" \"%s\""), *ProjectDir);
 	Cmd.Appendf(TEXT(" -run=cook"));
 	Cmd.Appendf(TEXT(" -targetplatform=%s"), *TargetPlatform->PlatformName());
@@ -624,25 +628,59 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	//Cmd = Cmd.ReplaceQuotesWithEscapedQuotes();
 
 	//todo::remove
+	UE_LOG(LogUnrealGameLink, Log, TEXT("%s"), *exe);
 	UE_LOG(LogUnrealGameLink, Log, TEXT("%s"), *Cmd);
 
 	//FOutputDevice& output = *GLog;
 	//bSuccess = FGenericPlatformMisc::Exec(nullptr, *Cmd, output);
 	
-	FString exe;
-	exe.Appendf(TEXT("\"%s\""), *FPaths::Combine(FPaths::ConvertRelativePathToFull(FPaths::EngineDir()), "Binaries/Win64/UnrealEditor-Cmd.exe"));
-	FPlatformProcess::CreateProc
+	/*
+		- good ref is at GitSourceControlUtils.cpp at RunDumpToFile(...)
+		- good ref is at PlasticSourceControlUtils.cpp at _StartBackgroundPlasticShell(...)
+		- good ref is at UGSCore\Utility.cpp at FUtility::ExecuteProcess(...)
+	*/
+	uint32 ProcId;
+	void* ReadPipe = nullptr;
+	void* WritePipe = nullptr;
+	if (!FPaths::FileExists(exe))
+	{
+		UE_LOG(LogUnrealGameLink, Error, TEXT("FUnrealGameLinkModule::CookModifiedPackage, Something is totally wrong at the Unreal Install!!!!"));
+		return false;
+	}
+
+	FProcHandle Proc = FPlatformProcess::CreateProc
 	(
-		*exe,
-		*Cmd,
+		*exe, 
+		*Cmd, 
+		true, 
 		false, 
-		true, 
-		true, 
-		0, 
+		false, 
+		&ProcId, 
 		0, 
 		nullptr, 
-		nullptr
+		WritePipe, 
+		ReadPipe
 	);
+
+	FString Output;
+	FString LatestOutput = FPlatformProcess::ReadPipe(ReadPipe);
+	while (FPlatformProcess::IsProcRunning(Proc) || !LatestOutput.IsEmpty())
+	{
+		Output += LatestOutput;
+		LatestOutput = FPlatformProcess::ReadPipe(ReadPipe);
+
+		//handle abort event
+	}
+
+	FPlatformProcess::ClosePipe(ReadPipe, WritePipe);
+
+	/*
+	if (Proc.IsValid())
+	{
+		FPlatformProcess::CloseProc(Proc);
+		//can return
+	}
+	*/
 
 	//TODO::remove, this is UE4.x remains
 	/*
