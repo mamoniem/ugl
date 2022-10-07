@@ -4,3 +4,4 @@ Intermediate/
 Saved/
 *.sln
 Build/XboxOneGDK/Symbols/
+*.log
