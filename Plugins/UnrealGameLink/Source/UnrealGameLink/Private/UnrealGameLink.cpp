@@ -570,32 +570,6 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 
 	GIsCookerLoadingPackage = true;
 
-	/*
-	For UE5.x we going in a different route, as things changed, the best reference is
-	TurnkeySupportModule.cpp CookOrPackage(...) which calls FTurnkeyEditorSupport::RunUAT(...)
-	which calls the IUATHelperModule::Get().CreateUatTask(...)
-	*/
-	/*
-	TArray<FAnalyticsEventAttribute> AnalyticsParamArray;
-	TargetPlatform->GetPlatformSpecificProjectAnalytics(AnalyticsParamArray);
-	*/
-
-
-	/*
-	FSavePackageArgs SaveArgs;
-	//SaveArgs.TargetPlatform = TargetPlatform;
-	FString const TempPackageName = Package->GetName();
-	FString const TempPackageFileName = FPackageName::LongPackageNameToFilename(TempPackageName, FPackageName::GetAssetPackageExtension());
-	FSavePackageResultStruct SaveResult = GEditor->Save
-	(
-		Package,
-		nullptr,
-		*CookedFileNamePath,
-		SaveArgs
-	);
-	*/
-
-
 
 	FSavePackageArgs SaveArgs;
 	FString const TempPackageName = Package->GetName();
@@ -609,15 +583,11 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	);
 
 	FString ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::GetProjectFilePath());
-	//ProjectDir = ProjectDir.Replace(TEXT("/"), TEXT("\\"));
-	//FString OutputDir = CookingDir.Replace(TEXT("/"), TEXT("\\"));
 
 	FString exe;
 	exe.Appendf(TEXT("%s"), *FPaths::Combine(FPaths::ConvertRelativePathToFull(FPaths::EngineDir()), "Binaries/Win64/UnrealEditor-Cmd.exe"));
 
 	FString Cmd;
-	//Cmd.Appendf(TEXT("\"%s\""), *FPaths::Combine(FPaths::ConvertRelativePathToFull(FPaths::EngineDir()), "Binaries/Win64/UnrealEditor-Cmd.exe"));
-	//Cmd.Appendf(TEXT("shell --encoding=UTF-8"));
 	Cmd.Appendf(TEXT(" \"%s\""), *ProjectDir);
 	Cmd.Appendf(TEXT(" -run=cook"));
 	Cmd.Appendf(TEXT(" -targetplatform=%s"), *TargetPlatform->PlatformName());
