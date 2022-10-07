@@ -57,6 +57,9 @@
 #include <Editor/UnrealEd/Private/Cooker/AsyncIODelete.h>
 #include <Editor/UnrealEd/Private/Cooker/LooseCookedPackageWriter.h>
 
+//
+#include "Interfaces/IPluginManager.h"
+
 static const FName UnrealGameLinkTabName("UnrealGameLink");
 
 #define LOCTEXT_NAMESPACE "FUnrealGameLinkModule"
@@ -544,6 +547,7 @@ FAsyncIODelete& GetAsyncIODelete()
 	return *AsyncIODelete;
 }
 
+
 /*
 * Cook the given Package for the specified given TargetPlatform and put the final cooked package in the CookedFileNamePath.
 * 
@@ -670,7 +674,11 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	const FString ResolvedRootPath;
 	const FString ResolvedMetadaPath;
 	ICookedPackageWriter* PkgWriter = nullptr;
-	//PkgWriter = new FLooseCookedPackageWriter(ResolvedRootPath, ResolvedMetadaPath, TargetPlatform, GetAsyncIODelete(), *PackageDatas, PluginsToRemap);
+	//TODO::move this to definations, and fetch once
+	TArray<TSharedRef<IPlugin>> PluginsToRemap = IPluginManager::Get().GetEnabledPlugins();
+	TUniquePtr<UE::Cook::FPackageDatas> PackageDatas;
+
+	PkgWriter = new FLooseCookedPackageWriter(ResolvedRootPath, ResolvedMetadaPath, TargetPlatform, GetAsyncIODelete(), *PackageDatas, PluginsToRemap);
 
 	//UCookCommandlet::staticm
 

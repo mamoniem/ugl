@@ -71,6 +71,7 @@ public class UnrealGameLink : ModuleRules
 				"TargetPlatform",
 				"TurnkeyIO",
 				"IoStoreUtilities",
+				"Projects"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
