@@ -39,16 +39,10 @@
 
 //UE5 downwards
 #include "UObject/SavePackage.h"
-#include "IUATHelperModule.h"
-#include "Styling/AppStyle.h"
-#include "ITurnkeyIOModule.h"
-#include "GenericPlatform/GenericPlatformMisc.h"
-
-/*
-#include "AnalyticsEventAttribute.h"
-#include "Interfaces/ITargetPlatform.h"
-#include "Interfaces/ITargetPlatformManagerModule.h"
-*/
+//#include "IUATHelperModule.h"
+//#include "Styling/AppStyle.h"
+//#include "ITurnkeyIOModule.h"
+//#include "GenericPlatform/GenericPlatformMisc.h"
 
 static const FName UnrealGameLinkTabName("UnrealGameLink");
 
@@ -595,14 +589,10 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	Cmd.Appendf(TEXT(" -cooksinglepackagenorefs"));
 	Cmd.Appendf(TEXT(" -PACKAGE=%s"), *Package->GetName());
 	Cmd.Appendf(TEXT(" -OutputDir=\"%s/\""), *CookingDir);
-	//Cmd = Cmd.ReplaceQuotesWithEscapedQuotes();
 
 	//todo::remove
 	UE_LOG(LogUnrealGameLink, Log, TEXT("%s"), *exe);
 	UE_LOG(LogUnrealGameLink, Log, TEXT("%s"), *Cmd);
-
-	//FOutputDevice& output = *GLog;
-	//bSuccess = FGenericPlatformMisc::Exec(nullptr, *Cmd, output);
 	
 	/*
 		- good ref is at GitSourceControlUtils.cpp at RunDumpToFile(...)
