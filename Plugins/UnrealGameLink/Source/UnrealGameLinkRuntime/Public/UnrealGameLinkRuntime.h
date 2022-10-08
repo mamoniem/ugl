@@ -37,6 +37,7 @@ private:
 	/*Delegates*/
 	void OnWorldTickStart(UWorld* World, ELevelTick TickType, float DeltaTime);
 
+	void ReadAllSettingFromConfig();
 	bool CheckForModifiedPackages();
 	void ReloadModifiedPackages();
 	void SortAndReloadModifiedPackages(TArray<UPackage*>& Packages, UWorld* World);

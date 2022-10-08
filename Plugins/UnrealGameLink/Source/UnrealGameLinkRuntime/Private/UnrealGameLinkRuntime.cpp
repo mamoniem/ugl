@@ -32,7 +32,9 @@ void FUnrealGameLinkRuntimeModule::StartupModule()
 	[2] - If Runtime Enabled, then register the auto-check
 	*/
 
+	//this is how we used to do it in UE4.x, but won't work (or broken) at UE5.x
 	//GetDefault<UUnrealGameLinkSettings>() vs GetMutableDefault<UUnrealGameLinkSettings>(). Mutable version allows modifications.
+	/*
 	if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
 	{
 		//this seem to be needed first before trying to get the values, at least for UE5.x and for built target (editor is fine without it)
@@ -49,9 +51,13 @@ void FUnrealGameLinkRuntimeModule::StartupModule()
 		bDebugRuntimePackagesReloading = UnrealGameLinkProjectSettings->bDebugRuntimePackagesReloading;
 
 		//Update values in the ini, aka reset values
-		UnrealGameLinkProjectSettings->MostRecentModifiedContent.Empty();
-		UnrealGameLinkProjectSettings->SaveConfig(CPF_Config, *UnrealGameLinkProjectSettings->GetDefaultConfigFilename());
+		//UnrealGameLinkProjectSettings->MostRecentModifiedContent.Empty();
+		//UnrealGameLinkProjectSettings->SaveConfig(CPF_Config, *UnrealGameLinkProjectSettings->GetDefaultConfigFilename());
 	}
+	*/
+
+	//better (more guranteed method) for UE5.x
+	ReadAllSettingFromConfig();
 
 	if (bDebugEditorGeneralMessages)
 		UE_LOG(LogUnrealGameLinkRuntime, Log, TEXT("Note: \n*\n*\n*\n*\n*\nFUnrealGameLinkRuntimeModule::StartupModule, COMPLETED with bEnabledAtRuntime is set to [%s]\n*\n*\n*\n*\n*"), bEnabledAtRuntime ? *FString("True") : *FString("False"));
@@ -97,6 +103,10 @@ void FUnrealGameLinkRuntimeModule::ShutdownModule()
 void FUnrealGameLinkRuntimeModule::OnWorldTickStart(UWorld* World, ELevelTick TickType, float DeltaTime)
 {
 	//UE_LOG(LogUnrealGameLinkRuntime, Log, TEXT("Note: \n*\n*\n*\n*\n*\n FUnrealGameLinkRuntimeModule::OnWorldTickStart =========>>>>> The world [%s] did start ticking, we can spawn the actor or start whatever we need in here \n*\n*\n*\n*\n*"), *World->GetName());
+	
+	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2.f, FColor::Green, bEnabledAtRuntime ? TEXT("TRUE") : TEXT("FALSE"), true);
+
+	//UE_LOG(LogUnrealGameLinkRuntime, Log, TEXT("Note: \n*\n*\n*\n*\n*\n FUnrealGameLinkRuntimeModule::OnWorldTickStart =========>>>>> bEnabledAtRuntime is set to [%s] \n*\n*\n*\n*\n*"), bEnabledAtRuntime ? TEXT("TRUE") : TEXT("FALSE"));
 	if (!bEnabledAtRuntime)
 		return;
 
@@ -111,6 +121,39 @@ void FUnrealGameLinkRuntimeModule::OnWorldTickStart(UWorld* World, ELevelTick Ti
 		if (CheckForModifiedPackages())
 			ReloadModifiedPackages();
 	}
+}
+
+void FUnrealGameLinkRuntimeModule::ReadAllSettingFromConfig()
+{
+	FConfigFile configFile;
+	GConfig->LoadLocalIniFile(configFile, TEXT("UnrealGameLink"), true, ANSI_TO_TCHAR(FPlatformProperties::IniPlatformName()), true); //DefaultUnrealGameLink.ini
+
+	bool foundEnabledAtRuntime;
+	bool foundEnabledAtEditorRuntime;
+	float foundEditorSyncInterval;
+	bool fountReloadActiveMapOnContentUpdates;
+	int32 foundPackagesToReloadPerPatch;
+	bool foundDebugEditorGeneralMessages;
+	bool foundDebugRuntimeTicks;
+	bool foundDebugRuntimePackagesReloading;
+
+	configFile.GetBool(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("bEnabledAtRuntime"), foundEnabledAtRuntime);
+	configFile.GetBool(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("bEnabledAtEditorRuntime"), foundEnabledAtEditorRuntime);
+	configFile.GetFloat(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("EditorSyncInterval"), foundEditorSyncInterval);
+	configFile.GetBool(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("bReloadActiveMapOnContentUpdates"), fountReloadActiveMapOnContentUpdates);
+	configFile.GetInt(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("PackagesToReloadPerPatch"), foundPackagesToReloadPerPatch);
+	configFile.GetBool(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("bDebugEditorGeneralMessages"), foundDebugEditorGeneralMessages);
+	configFile.GetBool(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("bDebugRuntimeTicks"), foundDebugRuntimeTicks);
+	configFile.GetBool(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("bDebugRuntimePackagesReloading"), foundDebugRuntimePackagesReloading);
+	
+	bEnabledAtRuntime = foundEnabledAtRuntime;
+	bEnabledAtEditorRuntime = foundEnabledAtEditorRuntime;
+	EditorSyncInterval = foundEditorSyncInterval;
+	bReloadActiveMapOnContentUpdates = fountReloadActiveMapOnContentUpdates;
+	PackagesToReloadPerPatch = foundPackagesToReloadPerPatch;
+	bDebugEditorGeneralMessages = foundDebugEditorGeneralMessages;
+	bDebugRuntimeTicks = foundDebugRuntimeTicks;
+	bDebugRuntimePackagesReloading = foundDebugRuntimePackagesReloading;
 }
 
 /*
