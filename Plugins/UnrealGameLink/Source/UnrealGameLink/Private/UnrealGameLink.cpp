@@ -495,6 +495,8 @@ bool FUnrealGameLinkModule::CookModifiedPackages(const TArray<UPackage*> Package
 		if (bDebugEditorPackagesOperations)
 			UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::CookModifiedPackages(), Started cooking packages for the [%s] target plaftorm."), *TargetPlatform->PlatformName());
 
+		FString PerPlatformUnrealGameLinkCookDirectory = FPaths::Combine(UnrealGameLinkCookDirectory, TargetPlatform->PlatformName());
+
 		TArray<UPackage*> TargetPackages;
 		TArray<FString> TargetFilePaths;
 
@@ -518,7 +520,7 @@ bool FUnrealGameLinkModule::CookModifiedPackages(const TArray<UPackage*> Package
 		}
 
 		//[2] cook the current package in the loop
-		bSuccess = CookAllModifiedPackages(TargetPackages, TargetPlatform, UnrealGameLinkCookDirectory, TargetFilePaths);
+		bSuccess = CookAllModifiedPackages(TargetPackages, TargetPlatform, PerPlatformUnrealGameLinkCookDirectory/*UnrealGameLinkCookDirectory*/, TargetFilePaths);
 	}
 
 	return true;
@@ -759,7 +761,7 @@ bool FUnrealGameLinkModule::CopyModifiedPackages()
 			if (IFileManager::Get().DirectoryExists(*runningGameRootDirectory.Path))
 			{
 				IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-				FString CopyFrom = FPaths::Combine(GetUnrealGameLinkParentCookingDirectory(), platformName, TEXT("Content")); //COOKING_DIR+PLATFORM_NAME+CONTENT (this is where all the sub-content directory files we need to copy)
+				FString CopyFrom = FPaths::Combine(GetUnrealGameLinkParentCookingDirectory(), platformName, FApp::GetProjectName(), TEXT("Content")); //COOKING_DIR+PLATFORM_NAME+CONTENT (this is where all the sub-content directory files we need to copy)
 				FString CopyTo = FPaths::Combine(*runningGameRootDirectory.Path, ProjectName, TEXT("Content")); //BUILD_ROOT+GAME_NAME+CONTENT (this is where Content folder content located)
 			
 				//[1]
