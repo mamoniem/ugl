@@ -810,8 +810,8 @@ void FUnrealGameLinkModule::GetPackagesCookingDirectory(UPackage* Package, const
 	check(strFoundAt != -1);
 	FString FilePathRelativeToContent = PackageFullFileNamePath.RightChop(strFoundAt);
 
-	//combine all (CookingDirInSavedFolder + Platform + InContentDirAndFileName)
-	OutPackageCookDirectory = FPaths::Combine(UnrealGameLinkCookedDirectory, TargetPlatformName, FilePathRelativeToContent);
+	//combine all (CookingDirInSavedFolder + Platform + ProjectName + InContentDirAndFileName)
+	OutPackageCookDirectory = FPaths::Combine(UnrealGameLinkCookedDirectory, TargetPlatformName, FApp::GetProjectName(), FilePathRelativeToContent);
 	if (bDebugEditorPackagesOperations)
 		UE_LOG(LogUnrealGameLink, Log, TEXT("FINAL COOKING PATH:%s"), *OutPackageCookDirectory);
 
