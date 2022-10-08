@@ -600,6 +600,7 @@ bool FUnrealGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, 
 	Cmd.Appendf(TEXT(" -run=cook"));
 	Cmd.Appendf(TEXT(" -targetplatform=%s"), *TargetPlatform->PlatformName());
 	Cmd.Appendf(TEXT(" -FastCook"));
+	Cmd.Appendf(TEXT(" -Compressed"));
 	Cmd.Appendf(TEXT(" -cooksinglepackagenorefs"));
 	Cmd.Appendf(TEXT(" -PACKAGE=%s"), *TargetPackagesMergedNames);
 	Cmd.Appendf(TEXT(" -OutputDir=\"%s/\""), *CookingDir);
