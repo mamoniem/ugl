@@ -32,9 +32,12 @@ void FUnrealGameLinkRuntimeModule::StartupModule()
 	[2] - If Runtime Enabled, then register the auto-check
 	*/
 
-	//GetDefault<UUnrealGameLinkSettings>() vs GetMutableDefault<UUnrealGameLinkSettings>()
+	//GetDefault<UUnrealGameLinkSettings>() vs GetMutableDefault<UUnrealGameLinkSettings>(). Mutable version allows modifications.
 	if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
 	{
+		//this seem to be needed first before trying to get the values, at least for UE5.x and for built target (editor is fine without it)
+		//UnrealGameLinkProjectSettings->LoadConfig();
+		
 		//Update obj values from the ini file
 		bEnabledAtRuntime = UnrealGameLinkProjectSettings->bEnabledAtRuntime;
 		bEnabledAtEditorRuntime = UnrealGameLinkProjectSettings->bEnabledAtEditorRuntime;
@@ -55,12 +58,15 @@ void FUnrealGameLinkRuntimeModule::StartupModule()
 
 	//No need for the runtime hacky. We only need that in a running standalone (PC, Console,...etc.)
 #if WITH_EDITOR
+	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 50.f, FColor::Red, TEXT("We're is EDITOR!!!"), true);
 	if (!bEnabledAtEditorRuntime)
 	{
 		bEnabledAtRuntime = false;
 		if (bDebugEditorGeneralMessages)
 			UE_LOG(LogUnrealGameLinkRuntime, Log, TEXT("Note: \n*\n*\n*\n*\n*\nFUnrealGameLinkRuntimeModule::StartupModule, DISABLED for editor, with bEnabledAtRuntime is set to [%s]\n*\n*\n*\n*\n*"), bEnabledAtRuntime ? *FString("True") : *FString("False"));
 	}
+#else
+	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 50.f, FColor::Green, TEXT("No Editor Available..."), true);
 #endif
 
 #if WITH_ENGINE
