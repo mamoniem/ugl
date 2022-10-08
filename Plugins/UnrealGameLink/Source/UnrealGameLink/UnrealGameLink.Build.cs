@@ -52,6 +52,7 @@ public class UnrealGameLink : ModuleRules
 			{
 				"Projects",
 				"InputCore",
+				//"EditorFramework", //UE5.x jplugins have it
 				"UnrealEd",
 				"ToolMenus",
 				"CoreUObject",

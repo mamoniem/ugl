@@ -281,7 +281,7 @@ void FUnrealGameLinkModule::RegisterMenus()
 	}
 
 	{
-		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar");
+		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
 		{
 			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("Settings");
 			{

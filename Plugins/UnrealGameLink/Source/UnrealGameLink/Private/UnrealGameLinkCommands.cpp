@@ -22,7 +22,7 @@
 
 void FUnrealGameLinkCommands::RegisterCommands()
 {
-	UI_COMMAND(PluginAction, "UnrealGameLink", "Update and link the currently modified asset[s] to the running game build[s]", EUserInterfaceActionType::Button, FInputGesture());
+	UI_COMMAND(PluginAction, "UnrealGameLink", "Update and link the currently modified asset[s] to the running game build[s]", EUserInterfaceActionType::Button, /*FInputGesture()*/FInputChord());
 }
 
 #undef LOCTEXT_NAMESPACE
