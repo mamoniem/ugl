@@ -59,6 +59,14 @@ void FUnrealGameLinkRuntimeModule::StartupModule()
 	//better (more guranteed method) for UE5.x
 	ReadAllSettingFromConfig();
 
+	//we done reading all needed from the config, can reset it, just in case there are "MostRecent" that we don't need
+	if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
+	{
+		//Update values in the ini, aka reset values
+		UnrealGameLinkProjectSettings->MostRecentModifiedContent.Empty();
+		UnrealGameLinkProjectSettings->SaveConfig(CPF_Config, *UnrealGameLinkProjectSettings->GetDefaultConfigFilename());
+	}
+
 	if (bDebugEditorGeneralMessages)
 		UE_LOG(LogUnrealGameLinkRuntime, Log, TEXT("Note: \n*\n*\n*\n*\n*\nFUnrealGameLinkRuntimeModule::StartupModule, COMPLETED with bEnabledAtRuntime is set to [%s]\n*\n*\n*\n*\n*"), bEnabledAtRuntime ? *FString("True") : *FString("False"));
 
