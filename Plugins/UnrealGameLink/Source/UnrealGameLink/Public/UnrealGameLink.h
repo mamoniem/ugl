@@ -48,7 +48,6 @@ private:
 	bool GetAllModifiedPackages(const bool CheckMaps, const bool CheckAssets, TArray<UPackage*>& OutPackages);
 	bool GetAllTargetPackagingPlatforms(TArray<ITargetPlatform*>& OutPackagingPlatforms);
 	bool CookModifiedPackages(const TArray<UPackage*> PackagesList, const TArray<ITargetPlatform*> TargetPlatformsList);
-	//bool CookModifiedPackage(UPackage* Package, ITargetPlatform* TargetPlatform, const FString& CookDir, const FString& CookedFileNamePath);
 	bool CookAllModifiedPackages(TArray<UPackage*> Packages, ITargetPlatform* TargetPlatform, const FString& CookDir, TArray<FString>& CookedFileNamePaths);
 	bool CopyModifiedPackages();
 	
@@ -75,6 +74,7 @@ private:
 	bool bSaveAsync = true;
 	bool bSaveUnversioned = false;
 	TArray<FUnrealGameLinkTargetPlatform> TargetPlatforms;
+
 	//read from the Project Settings [debug toggles]
 	bool bDebugEditorGeneralMessages = true;
 	bool bDebugEditorPackagesOperations = true;

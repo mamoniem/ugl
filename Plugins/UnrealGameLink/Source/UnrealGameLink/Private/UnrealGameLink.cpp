@@ -492,11 +492,11 @@ bool FUnrealGameLinkModule::CookModifiedPackages(const TArray<UPackage*> Package
 /*
 * Cook the given Package for the specified given TargetPlatform and put the final cooked package in the CookedFileNamePath.
 * 
-* @param Package						The exact package that need to be cooked
+* @param Packages						List of the packages that need to be re-cooked
 * @param TargetPlatform					The platform we gonna cook for (usually win64, XbGDK or XbX. But others are okay)
+* @param CookingDir						The parent directory for cooking
 * @param CookedFileNamePath				The name and location for the resulted cooked package
 */
-//bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatform* TargetPlatform, const FString& CookingDir, const FString& CookedFileNamePath)
 bool FUnrealGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, ITargetPlatform* TargetPlatform, const FString& CookingDir, TArray<FString>& CookedFileNamePaths)
 {
 	bool bSuccess = false;
@@ -543,7 +543,6 @@ bool FUnrealGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, 
 		}
 
 		GIsCookerLoadingPackage = true;
-
 
 		FSavePackageArgs SaveArgs;
 		FString const TempPackageName = Packages[i]->GetName();
@@ -617,7 +616,7 @@ bool FUnrealGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, 
 
 		UE_LOG(LogUnrealGameLink, Log, TEXT("%s"), *LatestOutput);
 
-		//handle abort event
+		//handle abort event if needed
 	}
 
 	FPlatformProcess::ClosePipe(ReadPipe, WritePipe);
@@ -691,13 +690,6 @@ bool FUnrealGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, 
 				Packages[i]->ClearPackageFlags(PKG_FilterEditorOnly);
 		}
 	}
-
-	//TODO::remove, no need anymore!
-	/*
-	if (bSuccess)
-	{
-	}
-	*/
 
 	return true;
 }
