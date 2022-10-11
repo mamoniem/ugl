@@ -58,8 +58,8 @@ void FUnrealGameLinkRuntimeModule::StartupModule()
 
 	//better (more guranteed method) for UE5.x
 	ReadAllSettingFromConfig();
-
 	//we done reading all needed from the config, can reset it, just in case there are "MostRecent" that we don't need
+	//this method below will reset everything in the config file to the defaults!
 	if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
 	{
 		//Update values in the ini, aka reset values
