@@ -148,7 +148,7 @@ void FUnrealGameLinkRuntimeModule::ReadAllSettingFromConfig()
 	configFile.GetBool(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("bDebugRuntimeTicks"), foundDebugRuntimeTicks);
 	configFile.GetBool(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("bDebugRuntimePackagesReloading"), foundDebugRuntimePackagesReloading);
 	
-	bEnabledAtRuntime = foundEnabledAtRuntime;
+	bEnabledAtRuntime = true;//foundEnabledAtRuntime; //due to modifying config file bug of UE5.x
 	bEnabledAtEditorRuntime = foundEnabledAtEditorRuntime;
 	EditorSyncInterval = foundEditorSyncInterval;
 	bReloadActiveMapOnContentUpdates = fountReloadActiveMapOnContentUpdates;
@@ -164,12 +164,19 @@ void FUnrealGameLinkRuntimeModule::ResetMostRecentInConfig()
 		UE_LOG(LogUnrealGameLinkRuntime, Log, TEXT("Note: FUnrealGameLinkRuntimeModule::ResetMostRecentInConfig =========>>>>> POST RELOADING/STARTINGUP CLEANUP <<<<<========="));
 
 	//this method below will reset everything in the config file to the defaults (since moved to UE5.x)!
-	/*
 	if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
 	{
 		//Update values in the ini, aka reset values
 		UnrealGameLinkProjectSettings->MostRecentModifiedContent.Empty();
 		UnrealGameLinkProjectSettings->SaveConfig(CPF_Config, *UnrealGameLinkProjectSettings->GetDefaultConfigFilename());
+	}
+
+	/*
+	if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
+	{
+		//Update values in the ini, aka reset values
+		UnrealGameLinkProjectSettings->MostRecentModifiedContent.Empty();
+		UnrealGameLinkProjectSettings->SaveConfig();
 	}
 	*/
 
@@ -188,7 +195,8 @@ void FUnrealGameLinkRuntimeModule::ResetMostRecentInConfig()
 	*/
 
 	/*
-	GConfig->RemoveKey(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("MostRecentModifiedContent"), TEXT("DefaultUnrealGameLink"));
+	GConfig->RemoveKey(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("MostRecentModifiedContent"), TEXT("UnrealGameLink"));
+	GConfig->Flush(true, TEXT("UnrealGameLink"));
 	*/
 }
 
