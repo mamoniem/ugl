@@ -793,7 +793,7 @@ FString FUnrealGameLinkModule::GetUnrealGameLinkParentCookingDirectory()
 }
 
 /*
-* Returns the main cooking directory for UnrealGameLink. Usually should be .../[PROJECT]/Saved/UnrealGameLinkCooked/...
+* Returns the main logs directory for UnrealGameLink. Usually should be .../[PROJECT]/Saved/UnrealGameLinkLogs/...
 */
 FString FUnrealGameLinkModule::GetUnrealGameLinkLogingDirectory()
 {
