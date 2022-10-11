@@ -173,10 +173,23 @@ void FUnrealGameLinkRuntimeModule::ResetMostRecentInConfig()
 	}
 	*/
 
+	/*
 	FConfigFile configFile;
 	TArray<FString> emptyData;
 	GConfig->LoadLocalIniFile(configFile, TEXT("UnrealGameLink"), true, ANSI_TO_TCHAR(FPlatformProperties::IniPlatformName()), true); //DefaultUnrealGameLink.ini
 	configFile.SetArray(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("MostRecentModifiedContent"), emptyData);
+	*/
+
+	/*
+	FConfigFile configFile;
+	TArray<FString> emptyData;
+	GConfig->LoadLocalIniFile(configFile, TEXT("UnrealGameLink"), true, ANSI_TO_TCHAR(FPlatformProperties::IniPlatformName()), true); //DefaultUnrealGameLink.ini
+	configFile.Remove(TEXT("MostRecentModifiedContent"));
+	*/
+
+	/*
+	GConfig->RemoveKey(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("MostRecentModifiedContent"), TEXT("DefaultUnrealGameLink"));
+	*/
 }
 
 /*
