@@ -59,13 +59,7 @@ void FUnrealGameLinkRuntimeModule::StartupModule()
 	//better (more guranteed method) for UE5.x
 	ReadAllSettingFromConfig();
 	//we done reading all needed from the config, can reset it, just in case there are "MostRecent" that we don't need
-	//this method below will reset everything in the config file to the defaults!
-	if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
-	{
-		//Update values in the ini, aka reset values
-		UnrealGameLinkProjectSettings->MostRecentModifiedContent.Empty();
-		UnrealGameLinkProjectSettings->SaveConfig(CPF_Config, *UnrealGameLinkProjectSettings->GetDefaultConfigFilename());
-	}
+	ResetMostRecentInConfig();
 
 	if (bDebugEditorGeneralMessages)
 		UE_LOG(LogUnrealGameLinkRuntime, Log, TEXT("Note: \n*\n*\n*\n*\n*\nFUnrealGameLinkRuntimeModule::StartupModule, COMPLETED with bEnabledAtRuntime is set to [%s]\n*\n*\n*\n*\n*"), bEnabledAtRuntime ? *FString("True") : *FString("False"));
@@ -162,6 +156,24 @@ void FUnrealGameLinkRuntimeModule::ReadAllSettingFromConfig()
 	bDebugEditorGeneralMessages = foundDebugEditorGeneralMessages;
 	bDebugRuntimeTicks = foundDebugRuntimeTicks;
 	bDebugRuntimePackagesReloading = foundDebugRuntimePackagesReloading;
+}
+
+void FUnrealGameLinkRuntimeModule::ResetMostRecentInConfig()
+{
+	//this method below will reset everything in the config file to the defaults (since moved to UE5.x)!
+	/*
+	if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
+	{
+		//Update values in the ini, aka reset values
+		UnrealGameLinkProjectSettings->MostRecentModifiedContent.Empty();
+		UnrealGameLinkProjectSettings->SaveConfig(CPF_Config, *UnrealGameLinkProjectSettings->GetDefaultConfigFilename());
+	}
+	*/
+
+	FConfigFile configFile;
+	TArray<FString> emptyData;
+	GConfig->LoadLocalIniFile(configFile, TEXT("UnrealGameLink"), true, ANSI_TO_TCHAR(FPlatformProperties::IniPlatformName()), true); //DefaultUnrealGameLink.ini
+	configFile.SetArray(TEXT("/Script/UnrealGameLinkRuntime.UnrealGameLinkSettings"), TEXT("MostRecentModifiedContent"), emptyData);
 }
 
 /*

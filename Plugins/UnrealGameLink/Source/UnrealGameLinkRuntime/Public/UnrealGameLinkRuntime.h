@@ -38,6 +38,7 @@ private:
 	void OnWorldTickStart(UWorld* World, ELevelTick TickType, float DeltaTime);
 
 	void ReadAllSettingFromConfig();
+	void ResetMostRecentInConfig();
 	bool CheckForModifiedPackages();
 	void ReloadModifiedPackages();
 	void SortAndReloadModifiedPackages(TArray<UPackage*>& Packages, UWorld* World);
