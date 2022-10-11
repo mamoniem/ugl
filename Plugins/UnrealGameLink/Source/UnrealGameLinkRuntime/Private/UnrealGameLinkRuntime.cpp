@@ -160,6 +160,9 @@ void FUnrealGameLinkRuntimeModule::ReadAllSettingFromConfig()
 
 void FUnrealGameLinkRuntimeModule::ResetMostRecentInConfig()
 {
+	if (bDebugRuntimePackagesReloading)
+		UE_LOG(LogUnrealGameLinkRuntime, Log, TEXT("Note: FUnrealGameLinkRuntimeModule::ResetMostRecentInConfig =========>>>>> POST RELOADING/STARTINGUP CLEANUP <<<<<========="));
+
 	//this method below will reset everything in the config file to the defaults (since moved to UE5.x)!
 	/*
 	if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
@@ -291,13 +294,7 @@ void FUnrealGameLinkRuntimeModule::ReloadModifiedPackages()
 	}
 
 	//clean up the most recent modified packages list, so we don't update every sync
-	if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
-	{
-		if (bDebugRuntimePackagesReloading)
-			UE_LOG(LogUnrealGameLinkRuntime, Log, TEXT("Note: FUnrealGameLinkRuntimeModule::ReloadModifiedPackages =========>>>>> POST RELOADING CLEANUP <<<<<========="));
-		UnrealGameLinkProjectSettings->MostRecentModifiedContent.Empty();
-		UnrealGameLinkProjectSettings->SaveConfig(CPF_Config, *UnrealGameLinkProjectSettings->GetDefaultConfigFilename()); //TODO::Test with UpdateDefaultConfigFile() instead, to only modify certain part
-	}
+	ResetMostRecentInConfig();
 
 	//if world need to be reloaded, then let's do it. Let's always assume we're in world 0
 	if (bPostCleanupReloadWorld)
