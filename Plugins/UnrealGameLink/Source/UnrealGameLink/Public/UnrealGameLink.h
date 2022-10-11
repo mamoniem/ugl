@@ -54,6 +54,7 @@ private:
 	//Helpers
 	void GetPackagesCookingDirectory(UPackage* Package, const FString& UnrealGameLinkCookedDirectory, const FString& TargetPlatformName, FString& OutPackageCookDirectory);
 	FString GetUnrealGameLinkParentCookingDirectory();
+	FString GetUnrealGameLinkLogingDirectory();
 
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
@@ -64,7 +65,7 @@ private:
 	bool IsTrackUsage = true;
 	int32 TrackedUsageCount = 0;
 	FString TrackedInfoToPush = "";
-	FString TrackedInfoDir = "\\\\Home\\M\\UnrealGameLink_Usage";
+	FString TrackedInfoDir = "";
 
 	//read from the Project Settings
 	bool bSaveBeforeCooking = true;
