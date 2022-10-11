@@ -60,7 +60,6 @@ public class UnrealGameLink : ModuleRules
 				"Slate",
 				"SlateCore",
 				"EngineSettings",
-				"SourceControl",
 				"UnrealGameLinkRuntime",
 				"TargetPlatform",
 				// ... add private dependencies that you statically link with here ...	

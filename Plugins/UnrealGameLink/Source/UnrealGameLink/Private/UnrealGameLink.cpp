@@ -33,10 +33,6 @@
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Framework/Notifications/NotificationManager.h"
 
-/* Includes for the track*/
-#include "ISourceControlModule.h"
-#include "SourceControl/Public/SourceControlHelpers.h"
-
 //UE5 downwards
 #include "UObject/SavePackage.h"
 
@@ -318,12 +314,15 @@ void FUnrealGameLinkModule::UnRegisterProjectSettings()
 
 void FUnrealGameLinkModule::OnShutdownPostPackagesSaved()
 {
+	//Can write some infor to log file or such to keep tracking usage, useful for crashes for example!
 	if (IsTrackUsage)
 	{
 		UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::OnShutdownPostPackagesSaved(), UnrealGameLink shall be saving the tracking info now."));
 
 		if (!TrackedInfoToPush.IsEmpty())
 		{
+			TrackedInfoDir = GetUnrealGameLinkLogingDirectory();
+
 			//get or make dir
 			if (IFileManager::Get().DirectoryExists(*TrackedInfoDir))
 			{
@@ -335,54 +334,22 @@ void FUnrealGameLinkModule::OnShutdownPostPackagesSaved()
 				IFileManager::Get().MakeDirectory(*TrackedInfoDir);
 			}
 		
+			//now let's make a file & fill it with all the info
+			FString fileName;
+			FString fullFilePathName;
+			fileName = *FDateTime::Now().ToString();
+			fileName.Append(".log");
+			fullFilePathName = FPaths::Combine(TrackedInfoDir, fileName);
 
-			//which name will be used
-			if (ISourceControlModule::Get().IsEnabled())
-			{
-				UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::OnShutdownPostPackagesSaved(), Src Ctrl is in use...Good!"));
-				
-				FString sourceControlSettingsFile = SourceControlHelpers::GetSettingsIni();
-				FString username;
-				GConfig->GetString(TEXT("PerforceSourceControl.PerforceSourceControlSettings"), TEXT("UserName"), username, sourceControlSettingsFile);
-
-				UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::OnShutdownPostPackagesSaved(), Current P4 user is [%s]"), *username);
-
-				//If there isn't a user dir, let's make one!
-				FString currentUserDirectory = FPaths::Combine(TrackedInfoDir, username);
-				if (IFileManager::Get().DirectoryExists(*currentUserDirectory))
-				{
-					//do nothing
-				}
-				else
-				{
-					IFileManager::Get().MakeDirectory(*currentUserDirectory);
-				}
-
-				//now let's make a file & fill it with all the info
-				FString fileName;
-				FString fullFilePathName;
-				fileName = username;
-				fileName.Append("-");
-				fileName.Append(FDateTime::Now().ToString());
-				fileName.Append(".ini");
-				fullFilePathName = FPaths::Combine(currentUserDirectory, fileName);
-
-				FArchive* writer = IFileManager::Get().CreateFileWriter(*fullFilePathName);
-				FString fileContent = "============================================\n";
-				fileContent.Append(FString::Printf(TEXT("UnrealGameLink used [%d] times during this session"), TrackedUsageCount));
-				fileContent.Append("\n");
-				fileContent.Append("============================================\n");
-				fileContent.Append(TrackedInfoToPush);
-				auto writerInfo = StringCast<ANSICHAR>(*fileContent, fileContent.Len());
-				writer->Serialize((ANSICHAR*)writerInfo.Get(), writerInfo.Length() * sizeof(ANSICHAR));
-				writer->Close();
-		
-			}
-			else
-			{
-				UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::OnShutdownPostPackagesSaved(), No Src Ctrl in use, we can't get a proper user name to count on, we might need to handle this by PC name later"));
-			}
-
+			FArchive* writer = IFileManager::Get().CreateFileWriter(*fullFilePathName);
+			FString fileContent = "============================================\n";
+			fileContent.Append(FString::Printf(TEXT("UnrealGameLink used [%d] times during this session"), TrackedUsageCount));
+			fileContent.Append("\n");
+			fileContent.Append("============================================\n");
+			fileContent.Append(TrackedInfoToPush);
+			auto writerInfo = StringCast<ANSICHAR>(*fileContent, fileContent.Len());
+			writer->Serialize((ANSICHAR*)writerInfo.Get(), writerInfo.Length() * sizeof(ANSICHAR));
+			writer->Close();
 		}
 
 	}
@@ -823,6 +790,15 @@ FString FUnrealGameLinkModule::GetUnrealGameLinkParentCookingDirectory()
 {
 	FString UnrealGameLinkCookDirectory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("UnrealGameLinkCooked")));
 	return UnrealGameLinkCookDirectory;
+}
+
+/*
+* Returns the main cooking directory for UnrealGameLink. Usually should be .../[PROJECT]/Saved/UnrealGameLinkCooked/...
+*/
+FString FUnrealGameLinkModule::GetUnrealGameLinkLogingDirectory()
+{
+	FString UnrealGameLinkLogsDirectory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("UnrealGameLinkLogs")));
+	return UnrealGameLinkLogsDirectory;
 }
 
 
