@@ -23,7 +23,7 @@ $$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
 
 void FGameLinkCommands::RegisterCommands()
 {
-	UI_COMMAND(PluginAction, "GameLink", "Update and link the currently modified asset[s] to the running game build[s]", EUserInterfaceActionType::Button, /*FInputGesture()*/FInputChord());
+	UI_COMMAND(PluginAction, "GameLink", "Update and link the currently modified asset[s] to the running game build[s]", EUserInterfaceActionType::Button, FInputChord());
 }
 
 #undef LOCTEXT_NAMESPACE

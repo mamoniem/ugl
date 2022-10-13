@@ -60,7 +60,6 @@ TSharedRef< FSlateStyleSet > FGameLinkStyle::Create()
 	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("GameLinkStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("GameLink")->GetBaseDir() / TEXT("Resources"));
 
-	//Style->Set("GameLink.PluginAction", new IMAGE_BRUSH_SVG(TEXT("Icon128_grayscale"), Icon40x40));
 	Style->Set("GameLink.PluginAction", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
 
 	return Style;

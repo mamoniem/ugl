@@ -22,7 +22,6 @@ $$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-/* Includes for Project Settings */
 #include "Settings/GameLinkSettings.h"
 
 class FToolBarBuilder;
@@ -52,7 +51,6 @@ private:
 	bool CookAllModifiedPackages(TArray<UPackage*> Packages, ITargetPlatform* TargetPlatform, const FString& CookDir, TArray<FString>& CookedFileNamePaths);
 	bool CopyModifiedPackages();
 	
-	//Helpers
 	void GetPackagesCookingDirectory(UPackage* Package, const FString& GameLinkCookedDirectory, const FString& TargetPlatformName, FString& OutPackageCookDirectory);
 	FString GetGameLinkParentCookingDirectory();
 	FString GetGameLinkLogingDirectory();
@@ -62,13 +60,11 @@ private:
 
 	FString ProjectName = "";
 
-	//tracking info
 	bool IsTrackUsage = true;
 	int32 TrackedUsageCount = 0;
 	FString TrackedInfoToPush = "";
 	FString TrackedInfoDir = "";
 
-	//read from the Project Settings
 	bool bSaveBeforeCooking = true;
 	bool bNotifyCookingResults = true;
 	bool bSaveConcurrent = true;
@@ -76,7 +72,6 @@ private:
 	bool bSaveUnversioned = false;
 	TArray<FGameLinkTargetPlatform> TargetPlatforms;
 
-	//read from the Project Settings [debug toggles]
 	bool bDebugEditorGeneralMessages = true;
 	bool bDebugEditorPackagesOperations = true;
 	bool bDebugEditorCooker = true;

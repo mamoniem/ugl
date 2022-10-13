@@ -25,52 +25,18 @@ $$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
 #include "ComponentReregisterContext.h"
 
 
-//#define LOCTEXT_NAMESPACE "FGameLinkRuntimeModule"
 DEFINE_LOG_CATEGORY_STATIC(LogGameLinkRuntime, Log, Log);
 
 void FGameLinkRuntimeModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-	/*
-	[1] - Read the settings
-	[2] - If Runtime Enabled, then register the auto-check
-	*/
 
-	//this is how we used to do it in UE4.x, but won't work (or broken) at UE5.x
-	//GetDefault<UGameLinkSettings>() vs GetMutableDefault<UGameLinkSettings>(). Mutable version allows modifications.
-	/*
-	if (UGameLinkSettings* GameLinkProjectSettings = GetMutableDefault<UGameLinkSettings>())
-	{
-		//this seem to be needed first before trying to get the values, at least for UE5.x and for built target (editor is fine without it)
-		//GameLinkProjectSettings->LoadConfig();
-		
-		//Update obj values from the ini file
-		bEnabledAtRuntime = GameLinkProjectSettings->bEnabledAtRuntime;
-		bEnabledAtEditorRuntime = GameLinkProjectSettings->bEnabledAtEditorRuntime;
-		EditorSyncInterval = GameLinkProjectSettings->EditorSyncInterval;
-		bReloadActiveMapOnContentUpdates = GameLinkProjectSettings->bReloadActiveMapOnContentUpdates;
-		PackagesToReloadPerPatch = GameLinkProjectSettings->PackagesToReloadPerPatch;
-		bDebugEditorGeneralMessages = GameLinkProjectSettings->bDebugEditorGeneralMessages;
-		bDebugRuntimeTicks = GameLinkProjectSettings->bDebugRuntimeTicks;
-		bDebugRuntimePackagesReloading = GameLinkProjectSettings->bDebugRuntimePackagesReloading;
-
-		//Update values in the ini, aka reset values
-		//GameLinkProjectSettings->MostRecentModifiedContent.Empty();
-		//GameLinkProjectSettings->SaveConfig(CPF_Config, *GameLinkProjectSettings->GetDefaultConfigFilename());
-	}
-	*/
-
-	//better (more guranteed method) for UE5.x
 	ReadAllSettingFromConfig();
-	//we done reading all needed from the config, can reset it, just in case there are "MostRecent" that we don't need
 	ResetMostRecentInConfig();
 
 	if (bDebugEditorGeneralMessages)
 		UE_LOG(LogGameLinkRuntime, Log, TEXT("Note: \n*\n*\n*\n*\n*\nFGameLinkRuntimeModule::StartupModule, COMPLETED with bEnabledAtRuntime is set to [%s]\n*\n*\n*\n*\n*"), bEnabledAtRuntime ? *FString("True") : *FString("False"));
 
-	//No need for the runtime hacky. We only need that in a running standalone (PC, Console,...etc.)
 #if WITH_EDITOR
-	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 50.f, FColor::Red, TEXT("We're is EDITOR!!!"), true);
 	if (!bEnabledAtEditorRuntime)
 	{
 		bEnabledAtRuntime = false;
@@ -78,13 +44,12 @@ void FGameLinkRuntimeModule::StartupModule()
 			UE_LOG(LogGameLinkRuntime, Log, TEXT("Note: \n*\n*\n*\n*\n*\nFGameLinkRuntimeModule::StartupModule, DISABLED for editor, with bEnabledAtRuntime is set to [%s]\n*\n*\n*\n*\n*"), bEnabledAtRuntime ? *FString("True") : *FString("False"));
 	}
 #else
-	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 50.f, FColor::Green, TEXT("No Editor Available..."), true);
+	
 #endif
 
 #if WITH_ENGINE
 #endif
 
-	//<3 delegates <3. Some were for testing, and let's keep them not totally removed for future updates and features, only cleaned up their body at the meantime.
 	FWorldDelegates::OnWorldTickStart.AddRaw(this, &FGameLinkRuntimeModule::OnWorldTickStart);	
 }
 
@@ -93,9 +58,6 @@ void FGameLinkRuntimeModule::StartupModule()
 */
 void FGameLinkRuntimeModule::ShutdownModule()
 {
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
-
 	FWorldDelegates::OnWorldTickStart.RemoveAll(this);
 }
 
@@ -108,11 +70,6 @@ void FGameLinkRuntimeModule::ShutdownModule()
 */
 void FGameLinkRuntimeModule::OnWorldTickStart(UWorld* World, ELevelTick TickType, float DeltaTime)
 {
-	//UE_LOG(LogGameLinkRuntime, Log, TEXT("Note: \n*\n*\n*\n*\n*\n FGameLinkRuntimeModule::OnWorldTickStart =========>>>>> The world [%s] did start ticking, we can spawn the actor or start whatever we need in here \n*\n*\n*\n*\n*"), *World->GetName());
-	
-	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2.f, FColor::Green, bEnabledAtRuntime ? TEXT("TRUE") : TEXT("FALSE"), true);
-
-	//UE_LOG(LogGameLinkRuntime, Log, TEXT("Note: \n*\n*\n*\n*\n*\n FGameLinkRuntimeModule::OnWorldTickStart =========>>>>> bEnabledAtRuntime is set to [%s] \n*\n*\n*\n*\n*"), bEnabledAtRuntime ? TEXT("TRUE") : TEXT("FALSE"));
 	if (!bEnabledAtRuntime)
 		return;
 
@@ -123,7 +80,6 @@ void FGameLinkRuntimeModule::OnWorldTickStart(UWorld* World, ELevelTick TickType
 			UE_LOG(LogGameLinkRuntime, Log, TEXT("Note: \n*\n*\n*\n*\n*\n FGameLinkRuntimeModule::OnWorldTickStart =========>>>>> The world [%s] is TICKING and printing this every [%f] seconds \n*\n*\n*\n*\n*"), *World->GetName(), EditorSyncInterval);
 		checkTimer = 0.f;
 
-		//Update the running game
 		if (CheckForModifiedPackages())
 			ReloadModifiedPackages();
 	}
@@ -152,7 +108,7 @@ void FGameLinkRuntimeModule::ReadAllSettingFromConfig()
 	configFile.GetBool(TEXT("/Script/GameLinkRuntime.GameLinkSettings"), TEXT("bDebugRuntimeTicks"), foundDebugRuntimeTicks);
 	configFile.GetBool(TEXT("/Script/GameLinkRuntime.GameLinkSettings"), TEXT("bDebugRuntimePackagesReloading"), foundDebugRuntimePackagesReloading);
 	
-	bEnabledAtRuntime = true;//foundEnabledAtRuntime; //due to modifying config file bug of UE5.x
+	bEnabledAtRuntime = true;
 	bEnabledAtEditorRuntime = foundEnabledAtEditorRuntime;
 	EditorSyncInterval = foundEditorSyncInterval;
 	bReloadActiveMapOnContentUpdates = fountReloadActiveMapOnContentUpdates;
@@ -167,41 +123,11 @@ void FGameLinkRuntimeModule::ResetMostRecentInConfig()
 	if (bDebugRuntimePackagesReloading)
 		UE_LOG(LogGameLinkRuntime, Log, TEXT("Note: FGameLinkRuntimeModule::ResetMostRecentInConfig =========>>>>> POST RELOADING/STARTINGUP CLEANUP <<<<<========="));
 
-	//this method below will reset everything in the config file to the defaults (since moved to UE5.x)!
 	if (UGameLinkSettings* GameLinkProjectSettings = GetMutableDefault<UGameLinkSettings>())
 	{
-		//Update values in the ini, aka reset values
 		GameLinkProjectSettings->MostRecentModifiedContent.Empty();
 		GameLinkProjectSettings->SaveConfig(CPF_Config, *GameLinkProjectSettings->GetDefaultConfigFilename());
 	}
-
-	/*
-	if (UGameLinkSettings* GameLinkProjectSettings = GetMutableDefault<UGameLinkSettings>())
-	{
-		//Update values in the ini, aka reset values
-		GameLinkProjectSettings->MostRecentModifiedContent.Empty();
-		GameLinkProjectSettings->SaveConfig();
-	}
-	*/
-
-	/*
-	FConfigFile configFile;
-	TArray<FString> emptyData;
-	GConfig->LoadLocalIniFile(configFile, TEXT("GameLink"), true, ANSI_TO_TCHAR(FPlatformProperties::IniPlatformName()), true); //DefaultGameLink.ini
-	configFile.SetArray(TEXT("/Script/GameLinkRuntime.GameLinkSettings"), TEXT("MostRecentModifiedContent"), emptyData);
-	*/
-
-	/*
-	FConfigFile configFile;
-	TArray<FString> emptyData;
-	GConfig->LoadLocalIniFile(configFile, TEXT("GameLink"), true, ANSI_TO_TCHAR(FPlatformProperties::IniPlatformName()), true); //DefaultGameLink.ini
-	configFile.Remove(TEXT("MostRecentModifiedContent"));
-	*/
-
-	/*
-	GConfig->RemoveKey(TEXT("/Script/GameLinkRuntime.GameLinkSettings"), TEXT("MostRecentModifiedContent"), TEXT("GameLink"));
-	GConfig->Flush(true, TEXT("GameLink"));
-	*/
 }
 
 /*
@@ -209,11 +135,6 @@ void FGameLinkRuntimeModule::ResetMostRecentInConfig()
 */
 bool FGameLinkRuntimeModule::CheckForModifiedPackages()
 {
-	/*
-	Keep in mind, using:
-	GConfig->UnloadFile(), GConfig->LoadFile(), GameLinkProjectSettings->UpdateDefaultConfigFile(), GameLinkProjectSettings->LoadConfig() or GameLinkProjectSettings->ReloadConfig();
-	will always fail.Due to reading the existing values from memory, but we need to re-read from disk.
-	*/ 
 	FConfigFile configFile;
 	TArray<FString> foundArrayData;
 	GConfig->LoadLocalIniFile(configFile, TEXT("GameLink"), true, ANSI_TO_TCHAR(FPlatformProperties::IniPlatformName()), true); //DefaultGameLink.ini
@@ -227,11 +148,6 @@ bool FGameLinkRuntimeModule::CheckForModifiedPackages()
 */
 void FGameLinkRuntimeModule::ReloadModifiedPackages()
 {
-	/*
-	Note that we can't use the GetMutableDefault<UGameLinkSettings>() method now, it will read from MEMORY. 
-	And we need to re-read from disk. But using LoadLocalIniFile() is 100% guranteed.
-	*/
-
 	bool bPostCleanupReloadWorld = false;
 
 	FConfigFile ConfigFile;
@@ -263,7 +179,6 @@ void FGameLinkRuntimeModule::ReloadModifiedPackages()
 		}
 	}
 
-	//Check if any package is the current running world, if so, let's cut it short, and reload the world right away (don't wait to reload it as package as this would most likely fail), if not let's reload the packages as expected
 	TWeakObjectPtr<UWorld> RunningWorld;
 	if (UGameEngine* GameEngine = Cast<UGameEngine>(GEngine))
 	{
@@ -277,7 +192,7 @@ void FGameLinkRuntimeModule::ReloadModifiedPackages()
 	{
 		if (bDebugRuntimePackagesReloading)
 			UE_LOG(LogGameLinkRuntime, Warning, TEXT("Note: FGameLinkRuntimeModule::ReloadModifiedPackages =========>>>>> World Context 0 World map name is [%s] and name [%s] <<<<<========="), *GEngine->GetWorldContexts()[0].World()->GetMapName(), *GEngine->GetWorldContexts()[0].World()->GetName()); //context 0 is the same as the main world. In running build there is only one context world.
-		//If a map is one of those packages, let's cut it short (TODO::Only if matching the currently running map, not just map in general)
+
 		for (UPackage* package : FoundArrayDataAsPackages)
 		{
 			if (bDebugRuntimePackagesReloading)
@@ -297,7 +212,6 @@ void FGameLinkRuntimeModule::ReloadModifiedPackages()
 			}
 		}
 
-		//Only if the current opened map is NOT part of the packages, we proceed to reload the packages
 		if (!bPostCleanupReloadWorld)
 		{
 			if (UWorld* RunningWorldPtr = RunningWorld.Get())
@@ -312,16 +226,13 @@ void FGameLinkRuntimeModule::ReloadModifiedPackages()
 			UE_LOG(LogGameLinkRuntime, Log, TEXT("Note: FGameLinkRuntimeModule::ReloadModifiedPackages =========>>>>> NO PACKAGES CAN BE RETRIVED FROM GIVEN DIRECTORIES <<<<<========="));
 	}
 
-	//If the user set that value, we then make sure to use it to force reload the world
 	if (bReloadActiveMapOnContentUpdates)
 	{
 		bPostCleanupReloadWorld = true;
 	}
 
-	//clean up the most recent modified packages list, so we don't update every sync
 	ResetMostRecentInConfig();
 
-	//if world need to be reloaded, then let's do it. Let's always assume we're in world 0
 	if (bPostCleanupReloadWorld)
 	{
 		if (bDebugRuntimePackagesReloading)
@@ -356,10 +267,8 @@ void FGameLinkRuntimeModule::SortAndReloadModifiedPackages(TArray<UPackage*>& Pa
 		}
 	}
 
-	//sort packages for reload, so dependencies reloaded earlier than dependents
 	SortPackagesForReload(Packages);
 
-	//Flush rendering commands & update the primitive scene info.
 	FGlobalComponentReregisterContext ComponentRegisterContext;
 
 	TArray<FReloadPackageData> PackagesToReloadData;
@@ -372,7 +281,6 @@ void FGameLinkRuntimeModule::SortAndReloadModifiedPackages(TArray<UPackage*>& Pa
 	TArray<UPackage*> AlreadyReloadedPackages;
 	ReloadPackages(PackagesToReloadData, AlreadyReloadedPackages, PackagesToReloadPerPatch);
 
-	//For the sake of info, this is very useful
 	if (bDebugRuntimePackagesReloading)
 	{
 		TArray<UPackage*> FailedPackages;
@@ -411,7 +319,5 @@ void FGameLinkRuntimeModule::SortAndReloadModifiedPackages(TArray<UPackage*>& Pa
 		level->InitializeRenderingResources();
 	}
 }
-
-// #undef LOCTEXT_NAMESPACE
 	
 IMPLEMENT_MODULE(FGameLinkRuntimeModule, GameLinkRuntime)

@@ -22,21 +22,16 @@ $$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 #include "Engine/EngineBaseTypes.h"
-
-/* Includes for Project Settings */
 #include "Settings/GameLinkSettings.h"
 
 
 class FGameLinkRuntimeModule : public IModuleInterface
 {
 public:
-
-	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
 private:
-	/*Delegates*/
 	void OnWorldTickStart(UWorld* World, ELevelTick TickType, float DeltaTime);
 
 	void ReadAllSettingFromConfig();
@@ -46,13 +41,12 @@ private:
 	void SortAndReloadModifiedPackages(TArray<UPackage*>& Packages, UWorld* World);
 
 private:
-	//read from the Project Settings
 	bool bEnabledAtRuntime = false;
 	bool bEnabledAtEditorRuntime = false;
 	float EditorSyncInterval = 0.f;
 	bool bReloadActiveMapOnContentUpdates = false;
 	int32 PackagesToReloadPerPatch = 0;
-	//mirror for the debug toggles
+
 	bool bDebugEditorGeneralMessages = true;
 	bool bDebugRuntimeTicks = true;
 	bool bDebugRuntimePackagesReloading = true;

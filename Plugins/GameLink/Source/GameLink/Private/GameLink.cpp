@@ -22,19 +22,12 @@ $$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
 #include "GameLinkCommands.h"
 #include "Misc/MessageDialog.h"
 #include "ToolMenus.h"
-
-/* Includes for Project Settings */
 #include "ISettingsModule.h"
 #include "GeneralProjectSettings.h"
 #include "Misc/App.h"
-
 #include "FileHelpers.h"
-
-/* Includes for slate notifications */
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Framework/Notifications/NotificationManager.h"
-
-//UE5 downwards
 #include "UObject/SavePackage.h"
 
 static const FName GameLinkTabName("GameLink");
@@ -43,9 +36,7 @@ static const FName GameLinkTabName("GameLink");
 DEFINE_LOG_CATEGORY_STATIC(LogGameLink, Log, Log);
 
 void FGameLinkModule::StartupModule()
-{
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-	
+{	
 	FGameLinkStyle::Initialize();
 	FGameLinkStyle::ReloadTextures();
 
@@ -63,7 +54,6 @@ void FGameLinkModule::StartupModule()
 	FCoreDelegates::OnPostEngineInit.AddRaw(this, &FGameLinkModule::RegisterProjectSettings);
 	FEditorDelegates::OnShutdownPostPackagesSaved.AddRaw(this, &FGameLinkModule::OnShutdownPostPackagesSaved);
 
-	//we need to get the project name one time only, as it is not possible to be changed while the editor is running
 	FetchProjectName();
 }
 
@@ -82,9 +72,6 @@ void FGameLinkModule::ShutdownModule()
 
 void FGameLinkModule::GameLinkToolbarButtonClicked()
 {
-	// Put your "OnButtonClicked" stuff here
-
-	//store track info
 	if (IsTrackUsage)
 	{
 		TrackedUsageCount++;
@@ -92,10 +79,8 @@ void FGameLinkModule::GameLinkToolbarButtonClicked()
 		TrackedInfoToPush.Append("\n");
 	}
 
-	//Always make sure to re-read the project settings, just in case the user did change some settings between different blinks.
 	FetchUserCustomProjectSetting();
 
-	//Clean up the cooking directory before we do anything
 	CleanupCookingDirectory();
 
 	bool bCookedSomething = CheckAndAutoCookIfNeeded();
@@ -110,7 +95,6 @@ void FGameLinkModule::GameLinkToolbarButtonClicked()
 		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FGameLinkModule", "GameLinkToolbarButtonClicked", "Oh, crap, issue in saving or cooking!"));
 	}
 
-	//store track info
 	if (IsTrackUsage)
 	{
 		TrackedInfoToPush.Append("============================================");
@@ -121,13 +105,6 @@ void FGameLinkModule::GameLinkToolbarButtonClicked()
 
 void FGameLinkModule::FetchProjectName()
 {
-	//this way will get the project name from the project's default settings, not the *.uproject file name
-	/*
-	const UGeneralProjectSettings& ProjectSettings = *GetDefault<UGeneralProjectSettings>();
-	ProjectName = ProjectSettings.ProjectName;
-	*/
-
-	//get the *.uproject name
 	ProjectName = FApp::GetProjectName();
 }
 
@@ -172,22 +149,9 @@ bool FGameLinkModule::CheckAndAutoCookIfNeeded()
 	
 	bool bSuccess = false;
 
-	/*
-	1 - Get all modified assets [done]
-	2 - Prompt to save assets [done]
-		2 - Skip what the user would like to skip, and re-arrange the list [done]
-	3 - Get targeted platforms to cook to (otherwise we don't need to cook) [done]
-	4 - Cook those assets based on the project settings [done]
-		4 - Notify the user same way targeting animation is doing [done]
-	5 - Copy the entire folder over to the build, regardless it is deployed or streaming [done]
-	6 - Refresh the running game runtime [GameLinkRuntimeModule]
-	*/
-
-	//[1]
 	TArray<UPackage*> PackagesToSave;
 	bSuccess  = GetAllModifiedPackages(true, true, PackagesToSave);
 
-	//[2]
 	TArray<UPackage*> PackagesThatSaved;
 	bSuccess = FEditorFileUtils::SaveDirtyPackages(true, true, true, false, false, false);
 
@@ -202,12 +166,10 @@ bool FGameLinkModule::CheckAndAutoCookIfNeeded()
 		return bSuccess;
 	}
 
-	//let's fill the final list that is of the user's choice
 	if (PackagesToSave.Num() != 0)
 	{
 		for (UPackage* package : PackagesToSave)
 		{
-			//it's saved already
 			if (!package->IsDirty())
 				PackagesThatSaved.AddUnique(package);
 		}
@@ -216,7 +178,6 @@ bool FGameLinkModule::CheckAndAutoCookIfNeeded()
 	if (bDebugEditorCooker)
 		UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::CheckAndAutoCookIfNeeded(), Found total of [%i] modified packages. But as the user wanted to process only [%i] packages. Skipping [%i] packages."), PackagesToSave.Num(), PackagesThatSaved.Num(), PackagesToSave.Num() - PackagesThatSaved.Num());
 
-	//[3]
 	TArray<ITargetPlatform*> TargetPackagingPlatforms;
 	bSuccess = GetAllTargetPackagingPlatforms(TargetPackagingPlatforms);
 	if (bSuccess)
@@ -231,7 +192,6 @@ bool FGameLinkModule::CheckAndAutoCookIfNeeded()
 		return bSuccess;
 	}
 
-	//[4]
 	bSuccess = CookModifiedPackages(PackagesThatSaved, TargetPackagingPlatforms);
 	if (bSuccess)
 	{
@@ -244,7 +204,6 @@ bool FGameLinkModule::CheckAndAutoCookIfNeeded()
 		return bSuccess;
 	}
 
-	//[5]
 	bSuccess = CopyModifiedPackages();
 	if (bSuccess)
 	{
@@ -262,7 +221,6 @@ bool FGameLinkModule::CheckAndAutoCookIfNeeded()
 
 void FGameLinkModule::RegisterMenus()
 {
-	// Owner will be used for cleanup in call to UToolMenus::UnregisterOwner
 	FToolMenuOwnerScoped OwnerScoped(this);
 
 	{
@@ -315,7 +273,6 @@ void FGameLinkModule::UnRegisterProjectSettings()
 
 void FGameLinkModule::OnShutdownPostPackagesSaved()
 {
-	//Can write some infor to log file or such to keep tracking usage, useful for crashes for example!
 	if (IsTrackUsage)
 	{
 		UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::OnShutdownPostPackagesSaved(), GameLink shall be saving the tracking info now."));
@@ -324,7 +281,6 @@ void FGameLinkModule::OnShutdownPostPackagesSaved()
 		{
 			TrackedInfoDir = GetGameLinkLogingDirectory();
 
-			//get or make dir
 			if (IFileManager::Get().DirectoryExists(*TrackedInfoDir))
 			{
 				UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::OnShutdownPostPackagesSaved(), Tracking DIR found."));
@@ -335,7 +291,6 @@ void FGameLinkModule::OnShutdownPostPackagesSaved()
 				IFileManager::Get().MakeDirectory(*TrackedInfoDir);
 			}
 		
-			//now let's make a file & fill it with all the info
 			FString fileName;
 			FString fullFilePathName;
 			fileName = *FDateTime::Now().ToString();
@@ -395,10 +350,8 @@ bool FGameLinkModule::GetAllModifiedPackages(const bool CheckMaps, const bool Ch
 */
 bool FGameLinkModule::GetAllTargetPackagingPlatforms(TArray<ITargetPlatform*>& OutPackagingPlatforms)
 {
-	//The values user set in the project settings, we just grab them as names/string
 	TArray<FString> UserSettingsTargetPackaingPlaftormNames;
 	
-	//get platforms list from the user setting of the project
 	if (const UGameLinkSettings* GameLinkProjectSettings = GetDefault<UGameLinkSettings>())
 	{
 		for (const FGameLinkTargetPlatform platform : GameLinkProjectSettings->TargetPlatforms)
@@ -409,7 +362,6 @@ bool FGameLinkModule::GetAllTargetPackagingPlatforms(TArray<ITargetPlatform*>& O
 			UserSettingsTargetPackaingPlaftormNames.AddUnique(platformName);
 		}
 
-		//User didn't set anything, the arry in the project settings is empty
 		if (UserSettingsTargetPackaingPlaftormNames.Num() <= 0)
 			return false;
 
@@ -428,7 +380,6 @@ bool FGameLinkModule::GetAllTargetPackagingPlatforms(TArray<ITargetPlatform*>& O
 	}
 	else
 	{
-		//error in settings! can't find project setting!!!
 		return false;
 	}
 
@@ -446,14 +397,12 @@ bool FGameLinkModule::CookModifiedPackages(const TArray<UPackage*> PackagesList,
 	bool bSuccess = false;
 	FString GameLinkCookDirectory = GetGameLinkParentCookingDirectory();
 
-	//Let's clean up the temp list before we do anything
 	if (UGameLinkSettings* GameLinkProjectSettings = GetMutableDefault<UGameLinkSettings>())
 	{
 		GameLinkProjectSettings->MostRecentModifiedContent.Empty();
 		GameLinkProjectSettings->SaveConfig(CPF_Config, *GameLinkProjectSettings->GetDefaultConfigFilename());
 	}
 
-	//get platforms list from the user setting of the project
 	for (ITargetPlatform* TargetPlatform : TargetPlatformsList)
 	{
 		if (bDebugEditorPackagesOperations)
@@ -466,7 +415,6 @@ bool FGameLinkModule::CookModifiedPackages(const TArray<UPackage*> PackagesList,
 
 		for (UPackage* package : PackagesList)
 		{
-			//[1] Get the directory for cooking
 			FString CookingFileDirectory;
 			GetPackagesCookingDirectory(package, GameLinkCookDirectory, TargetPlatform->PlatformName(), CookingFileDirectory);
 			if (bDebugEditorPackagesOperations)
@@ -483,7 +431,6 @@ bool FGameLinkModule::CookModifiedPackages(const TArray<UPackage*> PackagesList,
 			TargetFilePaths.Add(CookingFileDirectory);
 		}
 
-		//[2] cook the current package in the loop
 		bSuccess = CookAllModifiedPackages(TargetPackages, TargetPlatform, PerPlatformGameLinkCookDirectory/*GameLinkCookDirectory*/, TargetFilePaths);
 	}
 
@@ -503,7 +450,6 @@ bool FGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, ITarge
 	bool bSuccess = false;
 	FString TargetPackagesMergedNames;
 
-	//TODO::Expose more flags to the project settings
 	uint32 SaveFlags = 
 		(bSaveConcurrent ? SAVE_Concurrent : 0) |
 		(bSaveAsync ? SAVE_Async : 0) |
@@ -513,23 +459,19 @@ bool FGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, ITarge
 
 	for (int32 i = 0; i < Packages.Num(); i++)
 	{
-		//merge all packages into single command argument split by '+'
 		if (i != 0)
 			TargetPackagesMergedNames.Appendf(TEXT("+"));
 		TargetPackagesMergedNames.Appendf(TEXT("%s"), *Packages[i]->GetName());
 
-		//TODO::Expose more flags to the project settings
 		EObjectFlags TopLevelFlags = RF_Public;
 		if (Cast<UWorld>(Packages[i]))
 			TopLevelFlags = RF_NoFlags;
 
-		//Check if the target have editor only, if so, let's set it. But make sure at the end before we exit, we clear that flag again
 		if (!TargetPlatform->HasEditorOnlyData())
 			Packages[i]->SetPackageFlags(PKG_FilterEditorOnly);
 		else
 			Packages[i]->ClearPackageFlags(PKG_FilterEditorOnly);
 
-		//Before we cook a package, let's check and delte if exist, just in case the folder clean failed at start
 		if (FPaths::FileExists(CookedFileNamePaths[i]))
 		{
 			IFileManager::Get().Delete(*CookedFileNamePaths[i]);
@@ -552,7 +494,7 @@ bool FGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, ITarge
 		(
 			Packages[i],
 			nullptr,
-			*CookedFileNamePaths[i], //path to a cooked uasset verison (windows only, now on in UE5.x other platforms would need an ICookedPackageWriter passed to the SaveArgs)
+			*CookedFileNamePaths[i],
 			SaveArgs
 		);
 	}
@@ -567,22 +509,10 @@ bool FGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, ITarge
 	Cmd.Appendf(TEXT(" -run=cook"));
 	Cmd.Appendf(TEXT(" -targetplatform=%s"), *TargetPlatform->PlatformName());
 	Cmd.Appendf(TEXT(" -FastCook"));
-	//Cmd.Appendf(TEXT(" -Compressed"));
-	//Cmd.Appendf(TEXT(" -UnVersioned"));
-	//Cmd.Appendf(TEXT(" -iterate"));
 	Cmd.Appendf(TEXT(" -cooksinglepackagenorefs"));
 	Cmd.Appendf(TEXT(" -PACKAGE=%s"), *TargetPackagesMergedNames);
 	Cmd.Appendf(TEXT(" -OutputDir=\"%s/\""), *CookingDir);
-
-	//todo::remove
-	UE_LOG(LogGameLink, Log, TEXT("%s"), *exe);
-	UE_LOG(LogGameLink, Log, TEXT("%s"), *Cmd);
 	
-	/*
-		- good ref is at GitSourceControlUtils.cpp at RunDumpToFile(...)
-		- good ref is at PlasticSourceControlUtils.cpp at _StartBackgroundPlasticShell(...)
-		- good ref is at UGSCore\Utility.cpp at FUtility::ExecuteProcess(...)
-	*/
 	uint32 ProcId;
 	void* ReadPipe = nullptr;
 	void* WritePipe = nullptr;
@@ -617,7 +547,6 @@ bool FGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, ITarge
 
 		UE_LOG(LogGameLink, Log, TEXT("%s"), *LatestOutput);
 
-		//handle abort event if needed
 	}
 
 	FPlatformProcess::ClosePipe(ReadPipe, WritePipe);
@@ -634,19 +563,10 @@ bool FGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, ITarge
 		UE_LOG(LogGameLink, Log, TEXT("FGameLinkModule::CookModifiedPackage, Exit with code: %d"), GotReturnCode);
 	}
 
-	/*
-	if (Proc.IsValid())
-	{
-		FPlatformProcess::CloseProc(Proc);
-		//can return
-	}
-	*/
-
 	GIsCookerLoadingPackage = false;
 
 	bSuccess = GotReturnCode && ExitCode == 1;
 
-	//Notify if user set the option
 	if (bNotifyCookingResults)
 	{
 		for (int32 i = 0; i < Packages.Num(); i++)
@@ -660,7 +580,7 @@ bool FGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, ITarge
 			);
 
 			FNotificationInfo notificationInfo(notificationMessage);
-			notificationInfo.ExpireDuration = 4.f; //fade in 1 sec, out 1 sec, and remains for 2 sec
+			notificationInfo.ExpireDuration = 4.f;
 			notificationInfo.FadeInDuration = 1.f;
 			notificationInfo.FadeOutDuration = 1.f;
 			notificationInfo.bFireAndForget = true;
@@ -670,7 +590,6 @@ bool FGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, ITarge
 			notificationInfo.Hyperlink = FSimpleDelegate::CreateLambda([](FString FilePath) { FPlatformProcess::ExploreFolder(*FilePath);}, CookedFileNamePaths[i]);
 			FSlateNotificationManager::Get().AddNotification(notificationInfo)->SetCompletionState(bSuccess ? SNotificationItem::ECompletionState::CS_Success : SNotificationItem::ECompletionState::CS_Fail);
 			
-			//last step, if success, we print to keep tracking in log, but also update the temp list in the project settings
 			if (bDebugEditorCooker)
 				UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::CookModifiedPackage, Success cooking the package [%s] for the target platform [%s]"), *Packages[i]->GetName(), *TargetPlatform->PlatformName());
 
@@ -686,7 +605,6 @@ bool FGameLinkModule::CookAllModifiedPackages(TArray<UPackage*> Packages, ITarge
 				}
 			}
 
-			//reset things to normal before we exit that package
 			if (!TargetPlatform->HasEditorOnlyData())
 				Packages[i]->ClearPackageFlags(PKG_FilterEditorOnly);
 		}
@@ -702,11 +620,6 @@ bool FGameLinkModule::CopyModifiedPackages()
 {
 	bool bSuccess = false;
 
-	/*
-	1 - Copy all the modified packages
-	2 - Copy the GameLink config
-	*/
-
 	if (const UGameLinkSettings* GameLinkProjectSettings = GetDefault<UGameLinkSettings>())
 	{
 		for (const FGameLinkTargetPlatform platform : GameLinkProjectSettings->TargetPlatforms)
@@ -716,19 +629,16 @@ bool FGameLinkModule::CopyModifiedPackages()
 
 			FDirectoryPath runningGameRootDirectory = platform.StreamingBuildRootDirectory;
 
-			//Just in case the user put a none valid directory, or even it was valid but been deleted or so..
 			if (IFileManager::Get().DirectoryExists(*runningGameRootDirectory.Path))
 			{
 				IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-				FString CopyFrom = FPaths::Combine(GetGameLinkParentCookingDirectory(), platformName, FApp::GetProjectName(), TEXT("Content")); //COOKING_DIR+PLATFORM_NAME+CONTENT (this is where all the sub-content directory files we need to copy)
-				FString CopyTo = FPaths::Combine(*runningGameRootDirectory.Path, ProjectName, TEXT("Content")); //BUILD_ROOT+GAME_NAME+CONTENT (this is where Content folder content located)
+				FString CopyFrom = FPaths::Combine(GetGameLinkParentCookingDirectory(), platformName, FApp::GetProjectName(), TEXT("Content"));
+				FString CopyTo = FPaths::Combine(*runningGameRootDirectory.Path, ProjectName, TEXT("Content"));
 			
-				//[1]
 				bSuccess = PlatformFile.CopyDirectoryTree(*CopyTo, *CopyFrom, true);
 
-				//[2]
-				FString CopyFileFrom = FPaths::Combine(*FPaths::ProjectConfigDir(), TEXT("DefaultGameLink.ini")); //PROJECT_CONFIG_DIR+CONFIG_FILE_NAME
-				FString CopyFileTo = FPaths::Combine(*runningGameRootDirectory.Path, ProjectName, TEXT("Config"), TEXT("DefaultGameLink.ini")); //BUILD_ROOT+GAME_NAME+CONFIG_DIR+FILE_NAME
+				FString CopyFileFrom = FPaths::Combine(*FPaths::ProjectConfigDir(), TEXT("DefaultGameLink.ini"));
+				FString CopyFileTo = FPaths::Combine(*runningGameRootDirectory.Path, ProjectName, TEXT("Config"), TEXT("DefaultGameLink.ini"));
 				IFileManager::Get().Copy(*CopyFileTo, *CopyFileFrom, true, true, true);
 			}
 			else
@@ -753,23 +663,18 @@ bool FGameLinkModule::CopyModifiedPackages()
 */
 void FGameLinkModule::GetPackagesCookingDirectory(UPackage* Package, const FString& GameLinkCookedDirectory, const FString& TargetPlatformName, FString& OutPackageCookDirectory)
 {
-	//remember that Package->FileName is "None" for the newly added packages! EPIC!!
-
 	if (bDebugEditorPackagesOperations)
 		UE_LOG(LogGameLink, Log, TEXT("FGameLinkModule::GetPackagesCookingDirectory() for the package: [%s]"), *Package->GetName());
 
 	FString PackageFullFileNamePath;
 
-	//Get full path
 	bool FoundPackage = false;
 	FoundPackage = FPackageName::DoesPackageExist(Package->GetName(), &PackageFullFileNamePath, false);
 
-	//remove the /../../../PROJECT_NAME/Content and leave only the asset name and path inside the content folder
 	int32 strFoundAt = PackageFullFileNamePath.Find("/Content", ESearchCase::IgnoreCase, ESearchDir::FromStart);
 	check(strFoundAt != -1);
 	FString FilePathRelativeToContent = PackageFullFileNamePath.RightChop(strFoundAt);
 
-	//combine all (CookingDirInSavedFolder + Platform + ProjectName + InContentDirAndFileName)
 	OutPackageCookDirectory = FPaths::Combine(GameLinkCookedDirectory, TargetPlatformName, FApp::GetProjectName(), FilePathRelativeToContent);
 	if (bDebugEditorPackagesOperations)
 		UE_LOG(LogGameLink, Log, TEXT("FINAL COOKING PATH:%s"), *OutPackageCookDirectory);
