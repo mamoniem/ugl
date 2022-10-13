@@ -21,6 +21,7 @@ $$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
+#include "Engine/EngineBaseTypes.h"
 
 /* Includes for Project Settings */
 #include "Settings/GameLinkSettings.h"

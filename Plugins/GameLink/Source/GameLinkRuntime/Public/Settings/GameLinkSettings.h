@@ -21,6 +21,7 @@ $$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
+#include "Engine/EngineTypes.h"
 
 #include "GameLinkSettings.generated.h"
 /**

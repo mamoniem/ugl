@@ -21,6 +21,9 @@ $$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
 #include "GameFramework/GameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/GameEngine.h"
+#include "Misc/ConfigCacheIni.h"
+#include "ComponentReregisterContext.h"
+
 
 //#define LOCTEXT_NAMESPACE "FGameLinkRuntimeModule"
 DEFINE_LOG_CATEGORY_STATIC(LogGameLinkRuntime, Log, Log);
