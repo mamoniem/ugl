@@ -7,7 +7,7 @@
 	"Category": "mamoniem",
 	"CreatedBy": "mamoniem",
 	"CreatedByURL": "http://www.mamoniem.com/",
-	"DocsURL": "https://mamoniem.com/unreal-game-link/",
+	"DocsURL": "https://mamoniem.com/game-link/",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/edfc6ab2006242378db0df0947460b43",
 	"SupportURL": "http://www.mamoniem.com/",
 	"EngineVersion": "5.0",
@@ -17,25 +17,23 @@
 	"IsExperimentalVersion": false,
 	"Installed": false,
 	"Modules": [
-	{
-		"Name": "GameLink",
-		"Type": "Editor",
-		"LoadingPhase": "Default",
-		"WhitelistPlatforms": [
-    		"Win64",
-    		"Linux",
-    		"Mac"
-  			]
-	},
-	{
-		"Name": "GameLinkRuntime",
-		"Type": "Runtime",
-		"LoadingPhase": "PostEngineInit",
-		"WhitelistPlatforms": [
-    		"Win64",
-    		"Linux",
-    		"Mac"
-  			]
-	}
+		{
+			"Name": "GameLink",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Mac"
+			]
+		},
+		{
+			"Name": "GameLinkRuntime",
+			"Type": "Runtime",
+			"LoadingPhase": "PostEngineInit",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Mac"
+			]
+		}
 	]
 }
