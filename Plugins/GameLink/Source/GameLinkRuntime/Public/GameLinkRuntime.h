@@ -1,19 +1,20 @@
 /*
-			$$\   $$\  $$$$$$\  $$\
-			$$ |  $$ |$$  __$$\ $$ |
-			$$ |  $$ |$$ /  \__|$$ |
-			$$ |  $$ |$$ |$$$$\ $$ |
-			$$ |  $$ |$$ |\_$$ |$$ |
-			$$ |  $$ |$$ |  $$ |$$ |
-			\$$$$$$  |\$$$$$$  |$$$$$$$$\
-			 \______/  \______/ \________|
 
-	Modify content in Editor & see them in a running
-		game on a wide range of target platfomrs
-		by:Muhammad A.Moniem(@_mamoniem)
-				All rights reserved
-						2019
-				http://www.mamoniem.com/
+ $$$$$$\                                    $$\       $$\           $$\
+$$  __$$\                                   $$ |      \__|          $$ |
+$$ /  \__| $$$$$$\  $$$$$$\$$$$\   $$$$$$\  $$ |      $$\ $$$$$$$\  $$ |  $$\
+$$ |$$$$\  \____$$\ $$  _$$  _$$\ $$  __$$\ $$ |      $$ |$$  __$$\ $$ | $$  |
+$$ |\_$$ | $$$$$$$ |$$ / $$ / $$ |$$$$$$$$ |$$ |      $$ |$$ |  $$ |$$$$$$  /
+$$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
+\$$$$$$  |\$$$$$$$ |$$ | $$ | $$ |\$$$$$$$\ $$$$$$$$\ $$ |$$ |  $$ |$$ | \$$\
+ \______/  \_______|\__| \__| \__| \_______|\________|\__|\__|  \__|\__|  \__|
+
+				Modify content in Editor & see them in a running
+					game on a wide range of target platfomrs
+					by:Muhammad A.Moniem(@_mamoniem)
+							All rights reserved
+								2002-2022
+						http://www.mamoniem.com/
 */
 
 #pragma once
@@ -22,10 +23,10 @@
 #include "Modules/ModuleManager.h"
 
 /* Includes for Project Settings */
-#include "Settings/UnrealGameLinkSettings.h"
+#include "Settings/GameLinkSettings.h"
 
 
-class FUnrealGameLinkRuntimeModule : public IModuleInterface
+class FGameLinkRuntimeModule : public IModuleInterface
 {
 public:
 

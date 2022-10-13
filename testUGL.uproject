@@ -12,7 +12,7 @@
 	],
 	"Plugins": [
 		{
-			"Name": "UnrealGameLink",
+			"Name": "GameLink",
 			"Enabled": true
 		}
 	]

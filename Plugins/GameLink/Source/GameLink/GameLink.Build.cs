@@ -1,26 +1,27 @@
 /*
-			$$\   $$\  $$$$$$\  $$\       
-			$$ |  $$ |$$  __$$\ $$ |      
-			$$ |  $$ |$$ /  \__|$$ |      
-			$$ |  $$ |$$ |$$$$\ $$ |      
-			$$ |  $$ |$$ |\_$$ |$$ |      
-			$$ |  $$ |$$ |  $$ |$$ |      
-			\$$$$$$  |\$$$$$$  |$$$$$$$$\ 
-			 \______/  \______/ \________|
 
-	Modify content in Editor & see them in a running 
-		game on a wide range of target platfomrs
-		by:Muhammad A.Moniem(@_mamoniem)
-				All rights reserved
-						2019
-				http://www.mamoniem.com/
+ $$$$$$\                                    $$\       $$\           $$\
+$$  __$$\                                   $$ |      \__|          $$ |
+$$ /  \__| $$$$$$\  $$$$$$\$$$$\   $$$$$$\  $$ |      $$\ $$$$$$$\  $$ |  $$\
+$$ |$$$$\  \____$$\ $$  _$$  _$$\ $$  __$$\ $$ |      $$ |$$  __$$\ $$ | $$  |
+$$ |\_$$ | $$$$$$$ |$$ / $$ / $$ |$$$$$$$$ |$$ |      $$ |$$ |  $$ |$$$$$$  /
+$$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
+\$$$$$$  |\$$$$$$$ |$$ | $$ | $$ |\$$$$$$$\ $$$$$$$$\ $$ |$$ |  $$ |$$ | \$$\
+ \______/  \_______|\__| \__| \__| \_______|\________|\__|\__|  \__|\__|  \__|
+
+				Modify content in Editor & see them in a running
+					game on a wide range of target platfomrs
+					by:Muhammad A.Moniem(@_mamoniem)
+							All rights reserved
+								2002-2022
+						http://www.mamoniem.com/
 */
 
 using UnrealBuildTool;
 
-public class UnrealGameLink : ModuleRules
+public class GameLink : ModuleRules
 {
-	public UnrealGameLink(ReadOnlyTargetRules Target) : base(Target)
+	public GameLink(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
@@ -60,7 +61,7 @@ public class UnrealGameLink : ModuleRules
 				"Slate",
 				"SlateCore",
 				"EngineSettings",
-				"UnrealGameLinkRuntime",
+				"GameLinkRuntime",
 				"TargetPlatform",
 				// ... add private dependencies that you statically link with here ...	
 			}

@@ -2,13 +2,13 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "UnrealGameLink",
+	"FriendlyName": "GameLink",
 	"Description": "Modify game/project content in Editor & see them in a running cooked/packaged game on a wide range of target platfomrs & console devkits",
 	"Category": "mamoniem",
 	"CreatedBy": "mamoniem",
 	"CreatedByURL": "http://www.mamoniem.com/",
 	"DocsURL": "https://mamoniem.com/unreal-game-link/",
-	"MarketplaceURL": "",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/edfc6ab2006242378db0df0947460b43",
 	"SupportURL": "http://www.mamoniem.com/",
 	"EngineVersion": "5.0",
 	"EnabledByDefault": false,
@@ -17,15 +17,25 @@
 	"IsExperimentalVersion": false,
 	"Installed": false,
 	"Modules": [
-		{
-			"Name": "UnrealGameLink",
-			"Type": "Editor",
-			"LoadingPhase": "Default"
-		},
-		{
-			"Name": "UnrealGameLinkRuntime",
-			"Type": "Runtime",
-			"LoadingPhase": "PostEngineInit"
-		}
+	{
+		"Name": "GameLink",
+		"Type": "Editor",
+		"LoadingPhase": "Default",
+		"WhitelistPlatforms": [
+    		"Win64",
+    		"Linux",
+    		"Mac"
+  			]
+	},
+	{
+		"Name": "GameLinkRuntime",
+		"Type": "Runtime",
+		"LoadingPhase": "PostEngineInit",
+		"WhitelistPlatforms": [
+    		"Win64",
+    		"Linux",
+    		"Mac"
+  			]
+	}
 	]
 }
