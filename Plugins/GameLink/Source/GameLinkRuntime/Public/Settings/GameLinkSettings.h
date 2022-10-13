@@ -1,19 +1,20 @@
 /*
-			$$\   $$\  $$$$$$\  $$\
-			$$ |  $$ |$$  __$$\ $$ |
-			$$ |  $$ |$$ /  \__|$$ |
-			$$ |  $$ |$$ |$$$$\ $$ |
-			$$ |  $$ |$$ |\_$$ |$$ |
-			$$ |  $$ |$$ |  $$ |$$ |
-			\$$$$$$  |\$$$$$$  |$$$$$$$$\
-			 \______/  \______/ \________|
 
-	Modify content in Editor & see them in a running
-		game on a wide range of target platfomrs
-		by:Muhammad A.Moniem(@_mamoniem)
-				All rights reserved
-						2019
-				http://www.mamoniem.com/
+ $$$$$$\                                    $$\       $$\           $$\
+$$  __$$\                                   $$ |      \__|          $$ |
+$$ /  \__| $$$$$$\  $$$$$$\$$$$\   $$$$$$\  $$ |      $$\ $$$$$$$\  $$ |  $$\
+$$ |$$$$\  \____$$\ $$  _$$  _$$\ $$  __$$\ $$ |      $$ |$$  __$$\ $$ | $$  |
+$$ |\_$$ | $$$$$$$ |$$ / $$ / $$ |$$$$$$$$ |$$ |      $$ |$$ |  $$ |$$$$$$  /
+$$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
+\$$$$$$  |\$$$$$$$ |$$ | $$ | $$ |\$$$$$$$\ $$$$$$$$\ $$ |$$ |  $$ |$$ | \$$\
+ \______/  \_______|\__| \__| \__| \_______|\________|\__|\__|  \__|\__|  \__|
+
+				Modify content in Editor & see them in a running
+					game on a wide range of target platfomrs
+					by:Muhammad A.Moniem(@_mamoniem)
+							All rights reserved
+								2002-2022
+						http://www.mamoniem.com/
 */
 
 #pragma once
@@ -21,7 +22,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 
-#include "UnrealGameLinkSettings.generated.h"
+#include "GameLinkSettings.generated.h"
 /**
  * 
  */
@@ -37,7 +38,7 @@ enum class ESupportedPlatforms : uint8
 };
 
 USTRUCT()
-struct FUnrealGameLinkTargetPlatform
+struct FGameLinkTargetPlatform
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -48,15 +49,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Cooker Settings")
 	FDirectoryPath StreamingBuildRootDirectory;
 
-	FUnrealGameLinkTargetPlatform()
+	FGameLinkTargetPlatform()
 	{
 		Platfrom = ESupportedPlatforms::WindowsNoEditor;
 		StreamingBuildRootDirectory.Path = "../";
 	}
 };
 
-UCLASS(config=UnrealGameLink, defaultConfig)
-class UNREALGAMELINKRUNTIME_API UUnrealGameLinkSettings : public UObject
+UCLASS(config=GameLink, defaultConfig)
+class GAMELINKRUNTIME_API UGameLinkSettings : public UObject
 {
 	GENERATED_BODY()
 
@@ -69,7 +70,7 @@ public:
 	UPROPERTY(EditAnywhere, config, meta = (ConfigRestartRequired=true), Category = "Runtime Settings")
 		bool bEnabledAtRuntime = false;
 
-	/* This shall be disabled, as it make no sense to Enable UnrealGameLink cooking-streaming for editor. Note that changing this value would need the editor to restart [Editing is meant to be disabled at the meantime]*/
+	/* This shall be disabled, as it make no sense to Enable GameLink cooking-streaming for editor. Note that changing this value would need the editor to restart [Editing is meant to be disabled at the meantime]*/
 	UPROPERTY(EditAnywhere, config, meta = (ConfigRestartRequired = true), Category = "Runtime Settings")
 		bool bEnabledAtEditorRuntime = false;
 
@@ -107,7 +108,7 @@ public:
 		
 	/* This is the list of the platform to cook for. Single platform is recommended for the fastest result, but always can have mutliple platforms at the same time */
 	UPROPERTY(EditAnywhere, config, meta = (TitleProperty = "Platfrom"), Category = "Cooker Settings")
-		TArray<FUnrealGameLinkTargetPlatform> TargetPlatforms;
+		TArray<FGameLinkTargetPlatform> TargetPlatforms;
 
 	////////////////////////////////////
 	// 	   Debug Settings	////////////
@@ -141,7 +142,7 @@ public:
 	UPROPERTY(VisibleAnywhere, config, Category = "Info")
 		int32 PackagesToReloadPerPatch = 200;
 
-	/* A read only list of the most recent modified assets (including all platforms per asset). This list will be filled whenever you UnrealGameLink something to a running game instance[s].
+	/* A read only list of the most recent modified assets (including all platforms per asset). This list will be filled whenever you GameLink something to a running game instance[s].
 	and will automatically empty itself frequently when needed, or at the start-up of the editor/engine. */
 	UPROPERTY(VisibleAnywhere, config, Category = "Info")
 		TArray<FString> MostRecentModifiedContent;

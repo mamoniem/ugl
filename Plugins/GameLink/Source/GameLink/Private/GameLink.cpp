@@ -1,24 +1,25 @@
 /*
-			$$\   $$\  $$$$$$\  $$\
-			$$ |  $$ |$$  __$$\ $$ |
-			$$ |  $$ |$$ /  \__|$$ |
-			$$ |  $$ |$$ |$$$$\ $$ |
-			$$ |  $$ |$$ |\_$$ |$$ |
-			$$ |  $$ |$$ |  $$ |$$ |
-			\$$$$$$  |\$$$$$$  |$$$$$$$$\
-			 \______/  \______/ \________|
 
-	Modify content in Editor & see them in a running
-		game on a wide range of target platfomrs
-		by:Muhammad A.Moniem(@_mamoniem)
-				All rights reserved
-						2019
-				http://www.mamoniem.com/
+ $$$$$$\                                    $$\       $$\           $$\
+$$  __$$\                                   $$ |      \__|          $$ |
+$$ /  \__| $$$$$$\  $$$$$$\$$$$\   $$$$$$\  $$ |      $$\ $$$$$$$\  $$ |  $$\
+$$ |$$$$\  \____$$\ $$  _$$  _$$\ $$  __$$\ $$ |      $$ |$$  __$$\ $$ | $$  |
+$$ |\_$$ | $$$$$$$ |$$ / $$ / $$ |$$$$$$$$ |$$ |      $$ |$$ |  $$ |$$$$$$  /
+$$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
+\$$$$$$  |\$$$$$$$ |$$ | $$ | $$ |\$$$$$$$\ $$$$$$$$\ $$ |$$ |  $$ |$$ | \$$\
+ \______/  \_______|\__| \__| \__| \_______|\________|\__|\__|  \__|\__|  \__|
+
+				Modify content in Editor & see them in a running
+					game on a wide range of target platfomrs
+					by:Muhammad A.Moniem(@_mamoniem)
+							All rights reserved
+								2002-2022
+						http://www.mamoniem.com/
 */
 
-#include "UnrealGameLink.h"
-#include "UnrealGameLinkStyle.h"
-#include "UnrealGameLinkCommands.h"
+#include "GameLink.h"
+#include "GameLinkStyle.h"
+#include "GameLinkCommands.h"
 #include "Misc/MessageDialog.h"
 #include "ToolMenus.h"
 
@@ -33,37 +34,37 @@
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Framework/Notifications/NotificationManager.h"
 
-static const FName UnrealGameLinkTabName("UnrealGameLink");
+static const FName GameLinkTabName("GameLink");
 
-#define LOCTEXT_NAMESPACE "FUnrealGameLinkModule"
-DEFINE_LOG_CATEGORY_STATIC(LogUnrealGameLink, Log, Log);
+#define LOCTEXT_NAMESPACE "FGameLinkModule"
+DEFINE_LOG_CATEGORY_STATIC(LogGameLink, Log, Log);
 
-void FUnrealGameLinkModule::StartupModule()
+void FGameLinkModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 	
-	FUnrealGameLinkStyle::Initialize();
-	FUnrealGameLinkStyle::ReloadTextures();
+	FGameLinkStyle::Initialize();
+	FGameLinkStyle::ReloadTextures();
 
-	FUnrealGameLinkCommands::Register();
+	FGameLinkCommands::Register();
 	
 	PluginCommands = MakeShareable(new FUICommandList);
 
 	PluginCommands->MapAction(
-		FUnrealGameLinkCommands::Get().PluginAction,
-		FExecuteAction::CreateRaw(this, &FUnrealGameLinkModule::UnrealGameLinkToolbarButtonClicked),
+		FGameLinkCommands::Get().PluginAction,
+		FExecuteAction::CreateRaw(this, &FGameLinkModule::GameLinkToolbarButtonClicked),
 		FCanExecuteAction());
 
-	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FUnrealGameLinkModule::RegisterMenus));
+	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FGameLinkModule::RegisterMenus));
 
-	FCoreDelegates::OnPostEngineInit.AddRaw(this, &FUnrealGameLinkModule::RegisterProjectSettings);
-	FEditorDelegates::OnShutdownPostPackagesSaved.AddRaw(this, &FUnrealGameLinkModule::OnShutdownPostPackagesSaved);
+	FCoreDelegates::OnPostEngineInit.AddRaw(this, &FGameLinkModule::RegisterProjectSettings);
+	FEditorDelegates::OnShutdownPostPackagesSaved.AddRaw(this, &FGameLinkModule::OnShutdownPostPackagesSaved);
 
 	//we need to get the project name one time only, as it is not possible to be changed while the editor is running
 	FetchProjectName();
 }
 
-void FUnrealGameLinkModule::ShutdownModule()
+void FGameLinkModule::ShutdownModule()
 {
 	UnRegisterProjectSettings();
 
@@ -71,12 +72,12 @@ void FUnrealGameLinkModule::ShutdownModule()
 
 	UToolMenus::UnregisterOwner(this);
 
-	FUnrealGameLinkStyle::Shutdown();
+	FGameLinkStyle::Shutdown();
 
-	FUnrealGameLinkCommands::Unregister();
+	FGameLinkCommands::Unregister();
 }
 
-void FUnrealGameLinkModule::UnrealGameLinkToolbarButtonClicked()
+void FGameLinkModule::GameLinkToolbarButtonClicked()
 {
 	// Put your "OnButtonClicked" stuff here
 
@@ -99,11 +100,11 @@ void FUnrealGameLinkModule::UnrealGameLinkToolbarButtonClicked()
 	if (bCookedSomething)
 	{
 		if (bDebugEditorGeneralMessages)
-			UE_LOG(LogUnrealGameLink, Log, TEXT("Note: \n\n<<<<<<<<<< FUnrealGameLinkModule::UnrealGameLinkToolbarButtonClicked(), User SUCCESS Find, Saving & Cooking some packages >>>>>>>>>>\n\n"));
+			UE_LOG(LogGameLink, Log, TEXT("Note: \n\n<<<<<<<<<< FGameLinkModule::GameLinkToolbarButtonClicked(), User SUCCESS Find, Saving & Cooking some packages >>>>>>>>>>\n\n"));
 	}
 	else
 	{
-		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FUnrealGameLinkModule", "UnrealGameLinkToolbarButtonClicked", "Oh, crap, issue in saving or cooking!"));
+		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FGameLinkModule", "GameLinkToolbarButtonClicked", "Oh, crap, issue in saving or cooking!"));
 	}
 
 	//store track info
@@ -115,7 +116,7 @@ void FUnrealGameLinkModule::UnrealGameLinkToolbarButtonClicked()
 
 }
 
-void FUnrealGameLinkModule::FetchProjectName()
+void FGameLinkModule::FetchProjectName()
 {
 	//this way will get the project name from the project's default settings, not the *.uproject file name
 	/*
@@ -130,40 +131,40 @@ void FUnrealGameLinkModule::FetchProjectName()
 /*
 * Look into the project settings, and make sure to read the required values from the ini file of UGL.
 */
-void FUnrealGameLinkModule::FetchUserCustomProjectSetting()
+void FGameLinkModule::FetchUserCustomProjectSetting()
 {
-	if (const UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetDefault<UUnrealGameLinkSettings>())
+	if (const UGameLinkSettings* GameLinkProjectSettings = GetDefault<UGameLinkSettings>())
 	{
-		bSaveBeforeCooking = UnrealGameLinkProjectSettings->bSaveBeforeCooking;
-		bNotifyCookingResults = UnrealGameLinkProjectSettings->bNotifyCookingResults;
-		bSaveConcurrent = UnrealGameLinkProjectSettings->bSaveConcurrent;
-		bSaveAsync = UnrealGameLinkProjectSettings->bSaveAsync;
-		bSaveUnversioned = UnrealGameLinkProjectSettings->bSaveUnversioned;
-		TargetPlatforms = UnrealGameLinkProjectSettings->TargetPlatforms;
-		bDebugEditorGeneralMessages = UnrealGameLinkProjectSettings->bDebugEditorGeneralMessages;
-		bDebugEditorPackagesOperations = UnrealGameLinkProjectSettings->bDebugEditorPackagesOperations;
-		bDebugEditorCooker = UnrealGameLinkProjectSettings->bDebugEditorCooker;
+		bSaveBeforeCooking = GameLinkProjectSettings->bSaveBeforeCooking;
+		bNotifyCookingResults = GameLinkProjectSettings->bNotifyCookingResults;
+		bSaveConcurrent = GameLinkProjectSettings->bSaveConcurrent;
+		bSaveAsync = GameLinkProjectSettings->bSaveAsync;
+		bSaveUnversioned = GameLinkProjectSettings->bSaveUnversioned;
+		TargetPlatforms = GameLinkProjectSettings->TargetPlatforms;
+		bDebugEditorGeneralMessages = GameLinkProjectSettings->bDebugEditorGeneralMessages;
+		bDebugEditorPackagesOperations = GameLinkProjectSettings->bDebugEditorPackagesOperations;
+		bDebugEditorCooker = GameLinkProjectSettings->bDebugEditorCooker;
 	}
 }
 
 /*
 * Clean up the cooking directory. Entirely! For now there's no reason to keep anything, even the platforms that is not targeted in the current run.
 */
-void FUnrealGameLinkModule::CleanupCookingDirectory()
+void FGameLinkModule::CleanupCookingDirectory()
 {
 
-	FString UnrealGameLinkCookDirectory = GetUnrealGameLinkParentCookingDirectory();
+	FString GameLinkCookDirectory = GetGameLinkParentCookingDirectory();
 
-	if (FPaths::DirectoryExists(UnrealGameLinkCookDirectory))
+	if (FPaths::DirectoryExists(GameLinkCookDirectory))
 	{
-		IFileManager::Get().DeleteDirectory(*UnrealGameLinkCookDirectory, true, true);
+		IFileManager::Get().DeleteDirectory(*GameLinkCookDirectory, true, true);
 	}
 }
 
 /*
 * Check for modified files, and see if we need/can cook them. This is taking place at the order below.
 */
-bool FUnrealGameLinkModule::CheckAndAutoCookIfNeeded()
+bool FGameLinkModule::CheckAndAutoCookIfNeeded()
 {
 	
 	bool bSuccess = false;
@@ -176,7 +177,7 @@ bool FUnrealGameLinkModule::CheckAndAutoCookIfNeeded()
 	4 - Cook those assets based on the project settings [done]
 		4 - Notify the user same way targeting animation is doing [done]
 	5 - Copy the entire folder over to the build, regardless it is deployed or streaming [done]
-	6 - Refresh the running game runtime [UnrealGameLinkRuntimeModule]
+	6 - Refresh the running game runtime [GameLinkRuntimeModule]
 	*/
 
 	//[1]
@@ -190,11 +191,11 @@ bool FUnrealGameLinkModule::CheckAndAutoCookIfNeeded()
 	if (bSuccess)
 	{
 		if (bDebugEditorCooker)
-			UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::CheckAndAutoCookIfNeeded(), User SUCCESS saving packages, will proceed in cooking them shortly"));
+			UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::CheckAndAutoCookIfNeeded(), User SUCCESS saving packages, will proceed in cooking them shortly"));
 	}
 	else
 	{
-		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FUnrealGameLinkModule", "UnrealGameLinkToolbarButtonClickedExec", "Oh, crap, issue in saving (cancelled may be), we can't cook data at this state!"));
+		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FGameLinkModule", "GameLinkToolbarButtonClickedExec", "Oh, crap, issue in saving (cancelled may be), we can't cook data at this state!"));
 		return bSuccess;
 	}
 
@@ -210,7 +211,7 @@ bool FUnrealGameLinkModule::CheckAndAutoCookIfNeeded()
 	}
 
 	if (bDebugEditorCooker)
-		UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::CheckAndAutoCookIfNeeded(), Found total of [%i] modified packages. But as the user wanted to process only [%i] packages. Skipping [%i] packages."), PackagesToSave.Num(), PackagesThatSaved.Num(), PackagesToSave.Num() - PackagesThatSaved.Num());
+		UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::CheckAndAutoCookIfNeeded(), Found total of [%i] modified packages. But as the user wanted to process only [%i] packages. Skipping [%i] packages."), PackagesToSave.Num(), PackagesThatSaved.Num(), PackagesToSave.Num() - PackagesThatSaved.Num());
 
 	//[3]
 	TArray<ITargetPlatform*> TargetPackagingPlatforms;
@@ -218,12 +219,12 @@ bool FUnrealGameLinkModule::CheckAndAutoCookIfNeeded()
 	if (bSuccess)
 	{
 		if (bDebugEditorCooker)
-			UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::CheckAndAutoCookIfNeeded().GetAllTargetPackagingPlatforms(), Successfully got [%d] Target platforms."), TargetPackagingPlatforms.Num());
+			UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::CheckAndAutoCookIfNeeded().GetAllTargetPackagingPlatforms(), Successfully got [%d] Target platforms."), TargetPackagingPlatforms.Num());
 
 	}
 	else
 	{
-		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FUnrealGameLinkModule", "UnrealGameLinkToolbarButtonClickedExec", "FAILED to get any target platforms from the project setting! Make sure to put at least one"));
+		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FGameLinkModule", "GameLinkToolbarButtonClickedExec", "FAILED to get any target platforms from the project setting! Make sure to put at least one"));
 		return bSuccess;
 	}
 
@@ -232,11 +233,11 @@ bool FUnrealGameLinkModule::CheckAndAutoCookIfNeeded()
 	if (bSuccess)
 	{
 		if (bDebugEditorCooker)
-			UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::CheckAndAutoCookIfNeeded().CookModifiedPackages, Successfully cooked [%d] packages for [%d] platforms"), PackagesThatSaved.Num(), TargetPackagingPlatforms.Num());
+			UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::CheckAndAutoCookIfNeeded().CookModifiedPackages, Successfully cooked [%d] packages for [%d] platforms"), PackagesThatSaved.Num(), TargetPackagingPlatforms.Num());
 	}
 	else
 	{
-		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FUnrealGameLinkModule", "UnrealGameLinkToolbarButtonClickedExec", "FAILED to Cook one or more packages, Check log for detailed errors"));
+		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FGameLinkModule", "GameLinkToolbarButtonClickedExec", "FAILED to Cook one or more packages, Check log for detailed errors"));
 		return bSuccess;
 	}
 
@@ -245,18 +246,18 @@ bool FUnrealGameLinkModule::CheckAndAutoCookIfNeeded()
 	if (bSuccess)
 	{
 		if (bDebugEditorCooker)
-			UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::CheckAndAutoCookIfNeeded().CopyModifiedPackages, Successfully Copied all modified [%d] packages for [%d] platforms"), PackagesThatSaved.Num(), TargetPackagingPlatforms.Num());
+			UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::CheckAndAutoCookIfNeeded().CopyModifiedPackages, Successfully Copied all modified [%d] packages for [%d] platforms"), PackagesThatSaved.Num(), TargetPackagingPlatforms.Num());
 	}
 	else
 	{
-		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FUnrealGameLinkModule", "UnrealGameLinkToolbarButtonClickedExec", "FAILED to Copy modified packages, Check log for detailed errors"));
+		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FGameLinkModule", "GameLinkToolbarButtonClickedExec", "FAILED to Copy modified packages, Check log for detailed errors"));
 		return bSuccess;
 	}
 
 	return true;
 }
 
-void FUnrealGameLinkModule::RegisterMenus()
+void FGameLinkModule::RegisterMenus()
 {
 	// Owner will be used for cleanup in call to UToolMenus::UnregisterOwner
 	FToolMenuOwnerScoped OwnerScoped(this);
@@ -265,7 +266,7 @@ void FUnrealGameLinkModule::RegisterMenus()
 		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
 		{
 			FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
-			Section.AddMenuEntryWithCommandList(FUnrealGameLinkCommands::Get().PluginAction, PluginCommands);
+			Section.AddMenuEntryWithCommandList(FGameLinkCommands::Get().PluginAction, PluginCommands);
 		}
 	}
 
@@ -274,60 +275,60 @@ void FUnrealGameLinkModule::RegisterMenus()
 		{
 			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("Settings");
 			{
-				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FUnrealGameLinkCommands::Get().PluginAction));
+				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FGameLinkCommands::Get().PluginAction));
 				Entry.SetCommandList(PluginCommands);
 			}
 		}
 	}
 }
 
-void FUnrealGameLinkModule::RegisterProjectSettings()
+void FGameLinkModule::RegisterProjectSettings()
 {
 	if (ISettingsModule* settingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
 		settingsModule->RegisterSettings
 		(
-			"Project", "Plugins", "UnrealGameLink",
-			LOCTEXT("UnrealGameLinkPluginName", "UnrealGameLink"),
-			LOCTEXT("UnrealGameLinkPluginTooltip", "Global settings for UnrealGameLink"),
-			GetMutableDefault<UUnrealGameLinkSettings>()
+			"Project", "Plugins", "GameLink",
+			LOCTEXT("GameLinkPluginName", "GameLink"),
+			LOCTEXT("GameLinkPluginTooltip", "Global settings for GameLink"),
+			GetMutableDefault<UGameLinkSettings>()
 		);
 	}
 }
 
-void FUnrealGameLinkModule::UnRegisterProjectSettings()
+void FGameLinkModule::UnRegisterProjectSettings()
 {
 	if (ISettingsModule* settingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
 		if (bDebugEditorGeneralMessages)
-			UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::UnRegisterProjectSettings(), UNREGISTER PROJECT SETTINGS =============>>>>>>>>>> "));
+			UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::UnRegisterProjectSettings(), UNREGISTER PROJECT SETTINGS =============>>>>>>>>>> "));
 
 		settingsModule->UnregisterSettings
 		(
-			"Project", "Plugins", "UnrealGameLink"
+			"Project", "Plugins", "GameLink"
 		);
 	}
 }
 
-void FUnrealGameLinkModule::OnShutdownPostPackagesSaved()
+void FGameLinkModule::OnShutdownPostPackagesSaved()
 {
 	//Can write some infor to log file or such to keep tracking usage, useful for crashes for example!
 	if (IsTrackUsage)
 	{
-		UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::OnShutdownPostPackagesSaved(), UnrealGameLink shall be saving the tracking info now."));
+		UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::OnShutdownPostPackagesSaved(), GameLink shall be saving the tracking info now."));
 
 		if (!TrackedInfoToPush.IsEmpty())
 		{
-			TrackedInfoDir = GetUnrealGameLinkLogingDirectory();
+			TrackedInfoDir = GetGameLinkLogingDirectory();
 
 			//get or make dir
 			if (IFileManager::Get().DirectoryExists(*TrackedInfoDir))
 			{
-				UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::OnShutdownPostPackagesSaved(), Tracking DIR found."));
+				UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::OnShutdownPostPackagesSaved(), Tracking DIR found."));
 			}
 			else
 			{
-				UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::OnShutdownPostPackagesSaved(), no DIR for tracking found!!!! We defianlty creating one"));
+				UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::OnShutdownPostPackagesSaved(), no DIR for tracking found!!!! We defianlty creating one"));
 				IFileManager::Get().MakeDirectory(*TrackedInfoDir);
 			}
 
@@ -340,7 +341,7 @@ void FUnrealGameLinkModule::OnShutdownPostPackagesSaved()
 
 			FArchive* writer = IFileManager::Get().CreateFileWriter(*fullFilePathName);
 			FString fileContent = "============================================\n";
-			fileContent.Append(FString::Printf(TEXT("UnrealGameLink used [%d] times during this session"), TrackedUsageCount));
+			fileContent.Append(FString::Printf(TEXT("GameLink used [%d] times during this session"), TrackedUsageCount));
 			fileContent.Append("\n");
 			fileContent.Append("============================================\n");
 			fileContent.Append(TrackedInfoToPush);
@@ -359,7 +360,7 @@ void FUnrealGameLinkModule::OnShutdownPostPackagesSaved()
 * @param CheckAssets			Either consider all assets (*.uasset) to be saved and cooked
 * @param OutPackages			Reference to the packages array that we fill with found results
 */
-bool FUnrealGameLinkModule::GetAllModifiedPackages(const bool CheckMaps, const bool CheckAssets, TArray<UPackage*>& OutPackages)
+bool FGameLinkModule::GetAllModifiedPackages(const bool CheckMaps, const bool CheckAssets, TArray<UPackage*>& OutPackages)
 {
 	if (CheckMaps)
 	{
@@ -374,30 +375,30 @@ bool FUnrealGameLinkModule::GetAllModifiedPackages(const bool CheckMaps, const b
 	if (OutPackages.Num() != 0)
 	{
 		if (bDebugEditorPackagesOperations)
-			UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::GetAllModifiedPackages(), found [%d] dirty packages that need to be saved."), OutPackages.Num());
+			UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::GetAllModifiedPackages(), found [%d] dirty packages that need to be saved."), OutPackages.Num());
 		return true;
 	}
 	else
 	{
-		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FUnrealGameLinkModule", "GetAllModifiedPackagesExec", "NOTHIN FOUND!!!"));
+		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FGameLinkModule", "GetAllModifiedPackagesExec", "NOTHIN FOUND!!!"));
 		return false;
 	}
 }
 
 /*
-* Look thought the project settings of the UnrealGameLink, and grab all the platforms that need to be targeted.
+* Look thought the project settings of the GameLink, and grab all the platforms that need to be targeted.
 * 
 * @param OutPackagingPlatforms		reference to the packaging platforms array to fill and send back.
 */
-bool FUnrealGameLinkModule::GetAllTargetPackagingPlatforms(TArray<ITargetPlatform*>& OutPackagingPlatforms)
+bool FGameLinkModule::GetAllTargetPackagingPlatforms(TArray<ITargetPlatform*>& OutPackagingPlatforms)
 {
 	//The values user set in the project settings, we just grab them as names/string
 	TArray<FString> UserSettingsTargetPackaingPlaftormNames;
 	
 	//get platforms list from the user setting of the project
-	if (const UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetDefault<UUnrealGameLinkSettings>())
+	if (const UGameLinkSettings* GameLinkProjectSettings = GetDefault<UGameLinkSettings>())
 	{
-		for (const FUnrealGameLinkTargetPlatform platform : UnrealGameLinkProjectSettings->TargetPlatforms)
+		for (const FGameLinkTargetPlatform platform : GameLinkProjectSettings->TargetPlatforms)
 		{
 			FString platformName = UEnum::GetValueAsString(platform.Platfrom);
 			platformName.RemoveAt(0, 21);
@@ -434,36 +435,36 @@ bool FUnrealGameLinkModule::GetAllTargetPackagingPlatforms(TArray<ITargetPlatfor
 * @param PackagesList			The list of packages to go through and cook
 * @param TargetPlatforms		The platforms we want to cook and update right now, usually single platform is recommended, but multiple are welcomed indeed
 */
-bool FUnrealGameLinkModule::CookModifiedPackages(const TArray<UPackage*> PackagesList, const TArray<ITargetPlatform*> TargetPlatformsList)
+bool FGameLinkModule::CookModifiedPackages(const TArray<UPackage*> PackagesList, const TArray<ITargetPlatform*> TargetPlatformsList)
 {
 	bool bSuccess = false;
-	FString UnrealGameLinkCookDirectory = GetUnrealGameLinkParentCookingDirectory();
+	FString GameLinkCookDirectory = GetGameLinkParentCookingDirectory();
 
 	//Let's clean up the temp list before we do anything
-	if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
+	if (UGameLinkSettings* GameLinkProjectSettings = GetMutableDefault<UGameLinkSettings>())
 	{
-		UnrealGameLinkProjectSettings->MostRecentModifiedContent.Empty();
-		UnrealGameLinkProjectSettings->SaveConfig(CPF_Config, *UnrealGameLinkProjectSettings->GetDefaultConfigFilename());
+		GameLinkProjectSettings->MostRecentModifiedContent.Empty();
+		GameLinkProjectSettings->SaveConfig(CPF_Config, *GameLinkProjectSettings->GetDefaultConfigFilename());
 	}
 
 	//get platforms list from the user setting of the project
 	for (ITargetPlatform* TargetPlatform : TargetPlatformsList)
 	{
 		if (bDebugEditorPackagesOperations)
-			UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::CookModifiedPackages(), Started cooking packages for the [%s] target plaftorm."), *TargetPlatform->PlatformName());
+			UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::CookModifiedPackages(), Started cooking packages for the [%s] target plaftorm."), *TargetPlatform->PlatformName());
 
 		for (UPackage* package : PackagesList)
 		{
 			//[1] Get the directory for cooking
 			FString CookingDirectory;
-			GetPackagesCookingDirectory(package, UnrealGameLinkCookDirectory, TargetPlatform->PlatformName(), CookingDirectory);
+			GetPackagesCookingDirectory(package, GameLinkCookDirectory, TargetPlatform->PlatformName(), CookingDirectory);
 			if (bDebugEditorPackagesOperations)
-				UE_LOG(LogUnrealGameLink, Log, TEXT("Cooking Dir for Packag [%s] is :%s"), *package->GetName(), *CookingDirectory);
+				UE_LOG(LogGameLink, Log, TEXT("Cooking Dir for Packag [%s] is :%s"), *package->GetName(), *CookingDirectory);
 
 			if (CookingDirectory.IsEmpty())
 			{
 				if (bDebugEditorPackagesOperations)
-					UE_LOG(LogUnrealGameLink, Error, TEXT("Faile to get or create Cooking Dir for the Packag [%s]"), *package->GetName());
+					UE_LOG(LogGameLink, Error, TEXT("Faile to get or create Cooking Dir for the Packag [%s]"), *package->GetName());
 				return false;
 			}
 
@@ -482,7 +483,7 @@ bool FUnrealGameLinkModule::CookModifiedPackages(const TArray<UPackage*> Package
 * @param TargetPlatform					The platform we gonna cook for (usually win64, XbGDK or XbX. But others are okay)
 * @param CookedFileNamePath				The name and location for the resulted cooked package
 */
-bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatform* TargetPlatform, const FString& CookedFileNamePath)
+bool FGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatform* TargetPlatform, const FString& CookedFileNamePath)
 {
 	bool bSuccess = false;
 
@@ -546,7 +547,7 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	{
 		FText notificationMessage = FText::Format
 		(
-			LOCTEXT("FUnrealGameLinkModuleNotification", "{0} Cooking package [{1}] for platform [{2}]"),
+			LOCTEXT("FGameLinkModuleNotification", "{0} Cooking package [{1}] for platform [{2}]"),
 			bSuccess ? FText::FromString(ANSI_TO_TCHAR("Success")) : FText::FromString(ANSI_TO_TCHAR("Failure")),
 			FText::FromString(Package->GetName()),
 			FText::FromString(TargetPlatform->PlatformName())
@@ -567,12 +568,12 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 	if (bSuccess)
 	{
 		if (bDebugEditorCooker)
-			UE_LOG(LogUnrealGameLink, Log, TEXT("Note: FUnrealGameLinkModule::CookModifiedPackage, Success cooking the package [%s] for the target platform [%s]"), *Package->GetName(), *TargetPlatform->PlatformName());
+			UE_LOG(LogGameLink, Log, TEXT("Note: FGameLinkModule::CookModifiedPackage, Success cooking the package [%s] for the target platform [%s]"), *Package->GetName(), *TargetPlatform->PlatformName());
 
-		if (UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetMutableDefault<UUnrealGameLinkSettings>())
+		if (UGameLinkSettings* GameLinkProjectSettings = GetMutableDefault<UGameLinkSettings>())
 		{
-			UnrealGameLinkProjectSettings->MostRecentModifiedContent.AddUnique(CookedFileNamePath);
-			UnrealGameLinkProjectSettings->SaveConfig(CPF_Config, *UnrealGameLinkProjectSettings->GetDefaultConfigFilename());
+			GameLinkProjectSettings->MostRecentModifiedContent.AddUnique(CookedFileNamePath);
+			GameLinkProjectSettings->SaveConfig(CPF_Config, *GameLinkProjectSettings->GetDefaultConfigFilename());
 
 			if (IsTrackUsage)
 			{
@@ -590,20 +591,20 @@ bool FUnrealGameLinkModule::CookModifiedPackage(UPackage* Package, ITargetPlatfo
 }
 
 /*
-* Copy the modified packages from the UnrealGameLink temp cooking directory, to their final residence place based on their platform values set in the project settings.
+* Copy the modified packages from the GameLink temp cooking directory, to their final residence place based on their platform values set in the project settings.
 */
-bool FUnrealGameLinkModule::CopyModifiedPackages()
+bool FGameLinkModule::CopyModifiedPackages()
 {
 	bool bSuccess = false;
 
 	/*
 	1 - Copy all the modified packages
-	2 - Copy the UnrealGameLink config
+	2 - Copy the GameLink config
 	*/
 
-	if (const UUnrealGameLinkSettings* UnrealGameLinkProjectSettings = GetDefault<UUnrealGameLinkSettings>())
+	if (const UGameLinkSettings* GameLinkProjectSettings = GetDefault<UGameLinkSettings>())
 	{
-		for (const FUnrealGameLinkTargetPlatform platform : UnrealGameLinkProjectSettings->TargetPlatforms)
+		for (const FGameLinkTargetPlatform platform : GameLinkProjectSettings->TargetPlatforms)
 		{
 			FString platformName = UEnum::GetValueAsString(platform.Platfrom);
 			platformName.RemoveAt(0, 21);
@@ -614,21 +615,21 @@ bool FUnrealGameLinkModule::CopyModifiedPackages()
 			if (IFileManager::Get().DirectoryExists(*runningGameRootDirectory.Path))
 			{
 				IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-				FString CopyFrom = FPaths::Combine(GetUnrealGameLinkParentCookingDirectory(), platformName, TEXT("Content")); //COOKING_DIR+PLATFORM_NAME+CONTENT (this is where all the sub-content directory files we need to copy)
+				FString CopyFrom = FPaths::Combine(GetGameLinkParentCookingDirectory(), platformName, TEXT("Content")); //COOKING_DIR+PLATFORM_NAME+CONTENT (this is where all the sub-content directory files we need to copy)
 				FString CopyTo = FPaths::Combine(*runningGameRootDirectory.Path, ProjectName, TEXT("Content")); //BUILD_ROOT+GAME_NAME+CONTENT (this is where Content folder content located)
 			
 				//[1]
 				bSuccess = PlatformFile.CopyDirectoryTree(*CopyTo, *CopyFrom, true);
 
 				//[2]
-				FString CopyFileFrom = FPaths::Combine(*FPaths::ProjectConfigDir(), TEXT("DefaultUnrealGameLink.ini")); //PROJECT_CONFIG_DIR+CONFIG_FILE_NAME
-				FString CopyFileTo = FPaths::Combine(*runningGameRootDirectory.Path, ProjectName, TEXT("Config"), TEXT("DefaultUnrealGameLink.ini")); //BUILD_ROOT+GAME_NAME+CONFIG_DIR+FILE_NAME
+				FString CopyFileFrom = FPaths::Combine(*FPaths::ProjectConfigDir(), TEXT("DefaultGameLink.ini")); //PROJECT_CONFIG_DIR+CONFIG_FILE_NAME
+				FString CopyFileTo = FPaths::Combine(*runningGameRootDirectory.Path, ProjectName, TEXT("Config"), TEXT("DefaultGameLink.ini")); //BUILD_ROOT+GAME_NAME+CONFIG_DIR+FILE_NAME
 				IFileManager::Get().Copy(*CopyFileTo, *CopyFileFrom, true, true, true);
 			}
 			else
 			{
 				if (bDebugEditorPackagesOperations)
-					UE_LOG(LogUnrealGameLink, Warning, TEXT("SKIPPED FUnrealGameLinkModule::CopyModifiedPackages() for the none-valid directory [%s]"), *runningGameRootDirectory.Path);
+					UE_LOG(LogGameLink, Warning, TEXT("SKIPPED FGameLinkModule::CopyModifiedPackages() for the none-valid directory [%s]"), *runningGameRootDirectory.Path);
 			}
 
 		}
@@ -641,16 +642,16 @@ bool FUnrealGameLinkModule::CopyModifiedPackages()
 * Get the cooking directory of a given package based on a given target platform & parent root cooking directory.
 * 
 * @param Package						The target package to get a cooking directory for
-* @param UnrealGameLinkCookedDirectory			The main cooking directory of the plugin, usually shall be at "PROJECT/Save/UnrealGameLinkCooked"
+* @param GameLinkCookedDirectory			The main cooking directory of the plugin, usually shall be at "PROJECT/Save/GameLinkCooked"
 * @param TargetPlatformName				The platform we cooking for, will be used to make a sub-folder of the cooking main directory
 * @param OutPackageCookDirectory		The value to send back to the caller, this shall be a full path including the filename + format
 */
-void FUnrealGameLinkModule::GetPackagesCookingDirectory(UPackage* Package, const FString& UnrealGameLinkCookedDirectory, const FString& TargetPlatformName, FString& OutPackageCookDirectory)
+void FGameLinkModule::GetPackagesCookingDirectory(UPackage* Package, const FString& GameLinkCookedDirectory, const FString& TargetPlatformName, FString& OutPackageCookDirectory)
 {
 	//remember that Package->FileName is "None" for the newly added packages! EPIC!!
 
 	if (bDebugEditorPackagesOperations)
-		UE_LOG(LogUnrealGameLink, Log, TEXT("FUnrealGameLinkModule::GetPackagesCookingDirectory() for the package: [%s]"), *Package->GetName());
+		UE_LOG(LogGameLink, Log, TEXT("FGameLinkModule::GetPackagesCookingDirectory() for the package: [%s]"), *Package->GetName());
 
 	FString PackageFullFileNamePath;
 
@@ -664,31 +665,31 @@ void FUnrealGameLinkModule::GetPackagesCookingDirectory(UPackage* Package, const
 	FString FilePathRelativeToContent = PackageFullFileNamePath.RightChop(strFoundAt);
 
 	//combine all (CookingDirInSavedFolder + Platform + InContentDirAndFileName)
-	OutPackageCookDirectory = FPaths::Combine(UnrealGameLinkCookedDirectory, TargetPlatformName, FilePathRelativeToContent);
+	OutPackageCookDirectory = FPaths::Combine(GameLinkCookedDirectory, TargetPlatformName, FilePathRelativeToContent);
 	if (bDebugEditorPackagesOperations)
-		UE_LOG(LogUnrealGameLink, Log, TEXT("FINAL COOKING PATH:%s"), *OutPackageCookDirectory);
+		UE_LOG(LogGameLink, Log, TEXT("FINAL COOKING PATH:%s"), *OutPackageCookDirectory);
 
 }
 
 /*
-* Returns the main cooking directory for UnrealGameLink. Usually should be .../[PROJECT]/Saved/UnrealGameLinkCooked/...
+* Returns the main cooking directory for GameLink. Usually should be .../[PROJECT]/Saved/GameLinkCooked/...
 */
-FString FUnrealGameLinkModule::GetUnrealGameLinkParentCookingDirectory()
+FString FGameLinkModule::GetGameLinkParentCookingDirectory()
 {
-	FString UnrealGameLinkCookDirectory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("UnrealGameLinkCooked")));
-	return UnrealGameLinkCookDirectory;
+	FString GameLinkCookDirectory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("GameLinkCooked")));
+	return GameLinkCookDirectory;
 }
 
 /*
-* Returns the main logs directory for UnrealGameLink. Usually should be .../[PROJECT]/Saved/UnrealGameLinkLogs/...
+* Returns the main logs directory for GameLink. Usually should be .../[PROJECT]/Saved/GameLinkLogs/...
 */
-FString FUnrealGameLinkModule::GetUnrealGameLinkLogingDirectory()
+FString FGameLinkModule::GetGameLinkLogingDirectory()
 {
-	FString UnrealGameLinkLogsDirectory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("UnrealGameLinkLogs")));
-	return UnrealGameLinkLogsDirectory;
+	FString GameLinkLogsDirectory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("GameLinkLogs")));
+	return GameLinkLogsDirectory;
 }
 
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FUnrealGameLinkModule, UnrealGameLink)
+IMPLEMENT_MODULE(FGameLinkModule, GameLink)
