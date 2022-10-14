@@ -23,6 +23,7 @@ $$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
 #include "Engine/GameEngine.h"
 #include "Misc/ConfigCacheIni.h"
 #include "ComponentReregisterContext.h"
+#include "Misc/App.h"
 
 
 //#define LOCTEXT_NAMESPACE "FGameLinkRuntimeModule"
@@ -140,10 +141,15 @@ void FGameLinkRuntimeModule::ReloadModifiedPackages()
 	*/
 
 	bool bPostCleanupReloadWorld = false;
+	//FString pluginDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectPluginsDir());
+	FString pluginDir = "/";
+	pluginDir.Append(FApp::GetProjectName());
+	pluginDir.Append("/Plugins/");
 
 	FConfigFile ConfigFile;
 	TArray<FString> FoundArrayData;
 	TArray<UPackage*> FoundArrayDataAsPackages;
+	TArray<FString> FoundPackagesRelativePaths;
 	GConfig->LoadLocalIniFile(ConfigFile, TEXT("GameLink"), true, ANSI_TO_TCHAR(FPlatformProperties::IniPlatformName()), true); //DefaultGameLink.ini
 	ConfigFile.GetArray(TEXT("/Script/GameLinkRuntime.GameLinkSettings"), TEXT("MostRecentModifiedContent"), FoundArrayData);
 
@@ -156,16 +162,37 @@ void FGameLinkRuntimeModule::ReloadModifiedPackages()
 	{
 		if (FoundItem.Contains(FPlatformProperties::PlatformName(), ESearchCase::CaseSensitive))
 		{
-			int32 strFoundAt = FoundItem.Find("/Content", ESearchCase::IgnoreCase, ESearchDir::FromStart);
-			check(strFoundAt != -1);
-			FString packageRelativePath = FoundItem.RightChop(strFoundAt); //"/Content/..../..../..../...."
-			packageRelativePath = packageRelativePath.Replace(*FString("Content"), *FString("Game"));
+			int32 strFoundAt = -1;
+			FString packageRelativePath;
+
+			//we only chop from the end at the mark of "Plugins" only if the path is inside the plugins folder.
+			//we chop from the end, just in case the full directory conatians the a parent folder called plugins
+			if (FoundItem.Contains(pluginDir))
+			{
+				strFoundAt = FoundItem.Find("/Plugins", ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+			}
+
+			if (strFoundAt != -1)
+			{
+				packageRelativePath = FoundItem.RightChop(strFoundAt); //"/Plugins/..../Content/..../..../..../...."
+				packageRelativePath = packageRelativePath.Replace(*FString("/Content"), *FString("")); //content folder of the plugin is not count in the path (can observe that in tooltips)
+				packageRelativePath = packageRelativePath.Replace(*FString("/Plugins"), *FString("")); //content folder of the plugin is not count in the path (can observe that in tooltips)
+			}
+			else
+			{
+				strFoundAt = FoundItem.Find("/Content", ESearchCase::IgnoreCase, ESearchDir::FromStart);
+				check(strFoundAt != -1);
+				packageRelativePath = FoundItem.RightChop(strFoundAt); //"/Content/..../..../..../...."
+				packageRelativePath = packageRelativePath.Replace(*FString("Content"), *FString("Game"));
+			}
+
 			if (bDebugRuntimePackagesReloading)
 				UE_LOG(LogGameLinkRuntime, Log, TEXT("Note: FGameLinkRuntimeModule::ReloadModifiedPackages =========>>>>> TargetFile [%s] <<<<<========="), *packageRelativePath);
 
 
 			UPackage* package = LoadPackage(nullptr, *packageRelativePath, 0);
 			FoundArrayDataAsPackages.AddUnique(package);
+			FoundPackagesRelativePaths.AddUnique(packageRelativePath);
 
 		}
 	}
@@ -279,7 +306,7 @@ void FGameLinkRuntimeModule::SortAndReloadModifiedPackages(TArray<UPackage*>& Pa
 	PackagesToReloadData.Reserve(Packages.Num());
 	for (UPackage* package : Packages)
 	{
-		PackagesToReloadData.Emplace(package, LOAD_None);
+		PackagesToReloadData.Emplace(package, LOAD_None); //LOAD_Async| LOAD_NoWarn| LOAD_MemoryReader| LOAD_PackageForPIE
 	}
 
 	TArray<UPackage*> AlreadyReloadedPackages;
