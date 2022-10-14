@@ -720,13 +720,22 @@ bool FGameLinkModule::CopyModifiedPackages()
 			if (IFileManager::Get().DirectoryExists(*runningGameRootDirectory.Path))
 			{
 				IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+				
+				//Content
 				FString CopyFrom = FPaths::Combine(GetGameLinkParentCookingDirectory(), platformName, FApp::GetProjectName(), TEXT("Content")); //COOKING_DIR+PLATFORM_NAME+CONTENT (this is where all the sub-content directory files we need to copy)
 				FString CopyTo = FPaths::Combine(*runningGameRootDirectory.Path, ProjectName, TEXT("Content")); //BUILD_ROOT+GAME_NAME+CONTENT (this is where Content folder content located)
 			
 				//[1]
 				bSuccess = PlatformFile.CopyDirectoryTree(*CopyTo, *CopyFrom, true);
 
+				//Plugins content (people starting to use that)
+				CopyFrom = FPaths::Combine(GetGameLinkParentCookingDirectory(), platformName, FApp::GetProjectName(), TEXT("Plugins")); //COOKING_DIR+PLATFORM_NAME+PLUGINS (this is where all the Plugins-content directory files we need to copy)
+				CopyTo = FPaths::Combine(*runningGameRootDirectory.Path, ProjectName, TEXT("Plugins")); //BUILD_ROOT+GAME_NAME+PLUGINS (this is where Plugins folder Plugins located)
+
 				//[2]
+				bSuccess = PlatformFile.CopyDirectoryTree(*CopyTo, *CopyFrom, true);
+
+				//[3]
 				FString CopyFileFrom = FPaths::Combine(*FPaths::ProjectConfigDir(), TEXT("DefaultGameLink.ini")); //PROJECT_CONFIG_DIR+CONFIG_FILE_NAME
 				FString CopyFileTo = FPaths::Combine(*runningGameRootDirectory.Path, ProjectName, TEXT("Config"), TEXT("DefaultGameLink.ini")); //BUILD_ROOT+GAME_NAME+CONFIG_DIR+FILE_NAME
 				IFileManager::Get().Copy(*CopyFileTo, *CopyFileFrom, true, true, true);
@@ -764,10 +773,33 @@ void FGameLinkModule::GetPackagesCookingDirectory(UPackage* Package, const FStri
 	bool FoundPackage = false;
 	FoundPackage = FPackageName::DoesPackageExist(Package->GetName(), &PackageFullFileNamePath, false);
 
-	//remove the /../../../PROJECT_NAME/Content and leave only the asset name and path inside the content folder
-	int32 strFoundAt = PackageFullFileNamePath.Find("/Content", ESearchCase::IgnoreCase, ESearchDir::FromStart);
-	check(strFoundAt != -1);
-	FString FilePathRelativeToContent = PackageFullFileNamePath.RightChop(strFoundAt);
+	//remove the /../../../PROJECT_NAME/Plugins and leave only the asset name and path inside the Plugins folder
+	//or
+	//remove the /../../../PROJECT_NAME/Content and leave only the asset name and path inside the Content folder
+	int32 strFoundAt = -1;
+	FString FilePathRelativeToContent;
+	
+	FString pluginDir = FPaths::ProjectPluginsDir();
+
+	//we only chop from the end at the mark of "Plugins" only if the path is inside the plugins folder.
+	//we chop from the end, just in case the full directory conatians the a parent folder called plugins
+	if (PackageFullFileNamePath.Contains(pluginDir))
+	{
+		strFoundAt = PackageFullFileNamePath.Find("/Plugins", ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+	}
+
+	if (strFoundAt != -1)
+	{
+		FilePathRelativeToContent = PackageFullFileNamePath.RightChop(strFoundAt);
+	}
+	else
+	{
+		//reaching here, means searching for /Plugins/Content failed, let's try /Content before we consider it total failure
+		strFoundAt = PackageFullFileNamePath.Find("/Content", ESearchCase::IgnoreCase, ESearchDir::FromStart);
+		check(strFoundAt != -1);
+		FilePathRelativeToContent = PackageFullFileNamePath.RightChop(strFoundAt);
+	}
+	
 
 	//combine all (CookingDirInSavedFolder + Platform + ProjectName + InContentDirAndFileName)
 	OutPackageCookDirectory = FPaths::Combine(GameLinkCookedDirectory, TargetPlatformName, FApp::GetProjectName(), FilePathRelativeToContent);
