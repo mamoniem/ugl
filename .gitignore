@@ -5,3 +5,4 @@ Saved/
 *.sln
 Build/XboxOneGDK/Symbols/
 *.log
+.vsconfig
