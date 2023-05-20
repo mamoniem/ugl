@@ -1,0 +1,39 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "GameLink",
+	"Description": "Modify game/project content in Editor & see them in a running cooked/packaged game on a wide range of target platfomrs & console devkits",
+	"Category": "mamoniem",
+	"CreatedBy": "mamoniem",
+	"CreatedByURL": "http://www.mamoniem.com/",
+	"DocsURL": "https://mamoniem.com/game-link/",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/edfc6ab2006242378db0df0947460b43",
+	"SupportURL": "http://www.mamoniem.com/",
+	"EngineVersion": "5.0",
+	"EnabledByDefault": false,
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "GameLink",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Mac"
+			]
+		},
+		{
+			"Name": "GameLinkRuntime",
+			"Type": "Runtime",
+			"LoadingPhase": "PostEngineInit",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Mac"
+			]
+		}
+	]
+}

@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "4.25",
+	"EngineAssociation": "5.1",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -12,7 +12,7 @@
 	],
 	"Plugins": [
 		{
-			"Name": "UnrealGameLink",
+			"Name": "GameLink",
 			"Enabled": true
 		}
 	]
