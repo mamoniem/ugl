@@ -13,10 +13,10 @@ So in short, using GL means faster iterations than ever been possible, and at th
 
 ## How to support? ##
 
-This product was used in the past during the lifecycle of UE4.x to help in many productions, here it is granted fully 100% for free. The only few things i would ask in return is:
+GameLink was used in the past during the lifecycle of UE4.x to help in many productions, here it is granted fully 100% for free. The only few things i would ask in return are (none is obligation):
 
 - Share about GL! you can use **#gamelink** as hashtag!
-- Don't hesitate to contribute withe fixes, features and/or improvements (pull-request anything anytime that would make GL better)
+- Don't hesitate to contribute with fixes, features and/or improvements (pull-request anything anytime that would make GL better)
 - Don't hesitate to share about the titles you shipped with the help of GL, would love to put together an album page full of those games!
 - If you would like to help further, Paypal link is up there!
 - Feel free to ask about anything or share your thought with me on twitter [@_mamoniem](https://twitter.com/_mamoniem)
