@@ -1,92 +1,55 @@
-# UGL
+![](https://mamoniem.com/wp-content/uploads/2023/05/UGL_Logo_192.png)
+
+> “When your game package is measured in tens of Gigabytes, you don’t want to keep making packages frequently…”
+
+# Game Link
+Previously known as UGL (Unreal Game Link)!
+
+## What it is? ##
+
+**Game Link (GL)** is an upgrade to the Unreal Engine games work-flow, Inspired by some of the great in-house engines & technologies used by some AAA studios. GameLink allows developers to modify a packaged game while it is running and being played on a running platform, so no time wasted in making new game packages. If you made a change, you can see it’s impact on the game on the target platform right away. Regardless the game package is running on Windows, or Consoles such as Xbox & Playsation, and regardless the game build is a shipping, debug, development or any other configuration, you should be able to update the game in no time.
+
+So in short, using GL means faster iterations than ever been possible, and at the same time a huge reduction in the time, effort & most importantly the “Cost” of game development.
+
+## How to support? ##
+
+GameLink was used in the past during the lifecycle of UE4.x to help in many productions, here it is granted fully 100% for free. The only few things i would ask in return are (none is an obligation):
+
+- Share about GL! you can use **#gamelink** as hashtag!
+- Don't hesitate to contribute with fixes, features and/or improvements (pull-request anything anytime that would make GL better)
+- Don't hesitate to share about the titles you shipped with the help of GL, would love to put together an album page full of those games!
+- Credit GameLink (Muhammad A.Moniem) in your game's credits.
+- If you would like to help further, [Paypal link](https://paypal.me/mamoniem?country.x=CA&locale.x=en_US) is up there!
+- Feel free to ask about anything or share your thought with me on twitter [@_mamoniem](https://twitter.com/_mamoniem)
+
+## How to use? ##
+
+For a quick tutorial, you can get this project sample ([UE4.x](https://drive.google.com/file/d/19-YZw7F89UtRvm1Drl65Tyb0idAVPZeX/view?usp=sharing), [UE5.x](https://drive.google.com/file/d/18v08vOl1Cz41iuZYO2HmcQfP2PcU7Fj8/view?usp=sharing)), then launch it.
+
+First thing to do, is to enable the GL plugin.
 
 
+![](https://mamoniem.com/wp-content/uploads/2022/10/vlcsnap-2022-10-12-05h28m31s604.png)
 
-## Getting started
+This would require the editor to reboot. Go ahead and do that! And once the editor launched again, you can modify GL’s project settings before proceeding further.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+![](https://mamoniem.com/wp-content/uploads/2022/10/vlcsnap-2022-10-12-05h28m53s507.png)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+The most important thing, is to make sure that **Enabled at Runtime** is checked, and the **Target Platforms** including at least a single value that represents your target platform of development at the time of using UGL.
 
-## Add your files
+If all good, you can go ahead an generate a game package to use, but before that, make sure that in the packaging settings, you disabled the **Use Pak File** as well as the **Share Material Shader Code** options.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+![](https://mamoniem.com/wp-content/uploads/2022/10/vlcsnap-2022-10-12-05h29m09s286.png)
 
-```
-cd existing_repo
-git remote add origin https://gitlab.com/mamoniem/ugl.git
-git branch -M main
-git push -uf origin main
-```
+Anytime you modify something in the editor, and you want to see it in the running game, you simply hit the GL button at the toolbar!
 
-## Integrate with your tools
+![](https://mamoniem.com/wp-content/uploads/2022/10/UGL_Logo_128.png)
 
-- [ ] [Set up project integrations](https://gitlab.com/mamoniem/ugl/-/settings/integrations)
+And that will reflect in the game right away!!
 
-## Collaborate with your team
+![](https://mamoniem.com/wp-content/uploads/2022/10/vlcsnap-2022-10-12-04h18m12s904.png)
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+For further in-depth use, you can watch the full playlist below
 
-## Test and Deploy
+[![](https://mamoniem.com/wp-content/uploads/2022/10/2022-10-12-21_03_59-Game-Link-GL-for-Unreal-Engine-YouTube.png)](https://www.youtube.com/playlist?list=PLTfMG1EpxB2eEsnsy4mVk52uWJPg8UOy2)
 
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!).  Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
