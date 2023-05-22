@@ -19,6 +19,9 @@ $$ |  $$ |$$  __$$ |$$ | $$ | $$ |$$   ____|$$ |      $$ |$$ |  $$ |$$  _$$<
 
 #include "GameLinkRuntime.h"
 #include "GameFramework/GameModeBase.h"
+#include "Engine/Level.h"
+#include "UObject/Package.h"
+#include "UObject/PackageReload.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/GameEngine.h"
 #include "Misc/ConfigCacheIni.h"
