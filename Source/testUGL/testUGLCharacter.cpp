@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "testUGLCharacter.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
+//#include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -79,7 +79,7 @@ void AtestUGLCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 
 void AtestUGLCharacter::OnResetVR()
 {
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
+	//UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
 }
 
 void AtestUGLCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
